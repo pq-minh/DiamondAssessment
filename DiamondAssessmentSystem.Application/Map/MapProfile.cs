@@ -1,0 +1,68 @@
+﻿using AutoMapper;
+using DiamondAssessmentSystem.Application.DTO;
+using DiamondAssessmentSystem.Infrastructure.Models;
+
+namespace DiamondAssessmentSystem.Application.Map
+{
+    public class MapProfile : Profile
+    {
+        public MapProfile()
+        {
+            //// Ánh xạ giữa Account và AccountDto
+            //CreateMap<Account, AccountDto>()
+            //    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccId))
+            //    .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role ?? 0)); // Handle nullable Role
+
+            //// Ánh xạ Customer với CustomerDto
+            //CreateMap<Customer, CustomerDto>()
+            //    .ForMember(dest => dest.Acc, opt => opt.MapFrom(src => src.Acc));
+
+            //// Ánh xạ Staff với StaffDto
+            //CreateMap<Employee, EmployeeDto>()
+            //    .ForMember(dest => dest.Acc, opt => opt.MapFrom(src => src.Acc));
+
+            //// Ánh xạ giữa Form và FormDto
+            //CreateMap<Request, RequestDto>()
+            //   .ForMember(dest => dest.BookingCommitments, opt => opt.MapFrom(src => src.BookingCommitments))
+            //   .ForMember(dest => dest.BookingReceipts, opt => opt.MapFrom(src => src.BookingReceipts))
+            //   .ForMember(dest => dest.BookingSealings, opt => opt.MapFrom(src => src.BookingSealings));
+
+            //// Ánh xạ giữa FormCreateDto và Form
+            //CreateMap<RequestCreateDto, Request>().ReverseMap();
+
+            //// Ánh xạ giữa Order (trước đây là Booking) và OrderDto (trước đây là BookingDto)
+            //CreateMap<Order, OrderDto>()
+            //    .ForMember(dest => dest.Customer, opt => opt.MapFrom(src => src.Customer))
+            //    .ForMember(dest => dest.Commitment, opt => opt.MapFrom(src => src.Commitment))
+            //    .ForMember(dest => dest.Consultant, opt => opt.MapFrom(src => src.Consultant))
+            //    .ForMember(dest => dest.Receipt, opt => opt.MapFrom(src => src.Receipt))
+            //    .ForMember(dest => dest.Sealing, opt => opt.MapFrom(src => src.Sealing));
+
+            //CreateMap<OrderCreateDto, Order>();
+
+            //// Ánh xạ giữa CustomerCreateDto và Customer
+            //CreateMap<CustomerCreateDto, Customer>();
+
+            //// Ánh xạ giữa Certificate và CertificateDto
+            //CreateMap<Certificate, CertificateDto>()
+            //    .ForMember(dest => dest.Results, opt => opt.MapFrom(src => src.Results));
+
+            //// Ánh xạ giữa CertificateCreateDto và Certificate
+            //CreateMap<CertificateCreateDto, Certificate>();
+
+            //// Ánh xạ giữa Result và ResultDto
+            //CreateMap<Result, ResultDto>();
+
+            //CreateMap<OrderDetail, OrderDetailDto>()
+            //    .ForMember(dest => dest.ServicePrice, opt => opt.MapFrom(src => src.Service))
+            //    .ForMember(dest => dest.Result, opt => opt.MapFrom(src => src.Result));
+
+
+            //CreateMap<OrderDetailCreateDto, OrderDetail>();
+
+            //CreateMap<ServicePrice, ServicePriceDto>();
+
+            //CreateMap<ServicePrice, ServicePriceCreateDto>().ReverseMap();
+        }
+    }
+}

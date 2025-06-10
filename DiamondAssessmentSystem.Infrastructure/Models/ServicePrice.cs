@@ -1,0 +1,25 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace DiamondAssessmentSystem.Infrastructure.Models;
+
+public partial class ServicePrice
+{
+    public int ServiceId { get; set; }
+
+    public string ServiceType { get; set; } = null!;
+
+    public decimal Price { get; set; }
+
+    public int Duration { get; set; }
+
+    public int EmployeeId { get; set; }
+
+    public string Status { get; set; } = null!;
+
+    public virtual Employee Employee { get; set; } = null!;
+
+    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+
+    public virtual ICollection<ServicePriceAudit> ServicePriceAudits { get; set; } = new List<ServicePriceAudit>();
+}

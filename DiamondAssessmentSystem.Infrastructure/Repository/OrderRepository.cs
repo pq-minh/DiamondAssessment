@@ -1,0 +1,83 @@
+﻿using DiamondAssessmentSystem.Infrastructure.IRepository;
+using DiamondAssessmentSystem.Infrastructure.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace DiamondAssessmentSystem.Infrastructure.Repository
+{
+    public class OrderRepository : IOrderRepository
+    {
+        private readonly DiamondAssessmentDbContext _context;
+
+        public OrderRepository(DiamondAssessmentDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<IEnumerable<Order>> GetOrdersAsync()
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)         // Bao gồm thông tin khách hàng
+                .Include(o => o.Commitment)       // Bao gồm thông tin cam kết
+                .Include(o => o.Consultant)       // Bao gồm thông tin nhân viên tư vấn
+                .Include(o => o.Receipt)          // Bao gồm thông tin biên nhận
+                .Include(o => o.Sealing)          // Bao gồm thông tin biên bản niêm phong
+                .ToListAsync();
+        }
+
+        public async Task<Order> GetOrderByIdAsync(int id)
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.Commitment)
+                .Include(o => o.Consultant)
+                .Include(o => o.Receipt)
+                .Include(o => o.Sealing)
+                .FirstOrDefaultAsync(o => o.OrderId == id);
+        }
+
+        public async Task<Order> CreateOrderAsync(Order order)
+        {
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+            return order;
+        }
+
+        public async Task<bool> UpdateOrderAsync(Order order)
+        {
+            _context.Entry(order).State = EntityState.Modified;
+            try
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await OrderExistsAsync(order.OrderId))
+                {
+                    return false;
+                }
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteOrderAsync(int id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null)
+            {
+                return false;
+            }
+
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        private async Task<bool> OrderExistsAsync(int id)
+        {
+            return await _context.Orders.AnyAsync(e => e.OrderId == id);
+        }
+    }
+}
