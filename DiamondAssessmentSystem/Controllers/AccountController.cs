@@ -1,5 +1,6 @@
 ﻿using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,65 +11,85 @@ namespace DiamondAssessmentSystem.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        //private readonly IAccountService _accountService;
+        private readonly IAccountService _accountService;
 
-        //public AccountController(IAccountService accountService)
-        //{
-        //    _accountService = accountService;
-        //}
+        public AccountController(IAccountService accountService)
+        {
+            _accountService = accountService;
+        }
 
-        //// GET: api/Account
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<AccountDto>>> GetAccounts()
-        //{
-        //    var accountDtos = await _accountService.GetAccounts();
-        //    return Ok(accountDtos);
-        //}
+        // GET: api/Account
+        //[Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> GetAccounts()
+        {
+            var accountDtos = await _accountService.GetAllUsersAsync();
+            return Ok(accountDtos);
+        }
 
-        //// GET: api/Account/5
-        //[HttpGet("{id}")]
-        //public async Task<ActionResult<AccountDto>> GetAccount(int id)
-        //{
-        //    var accountDto = await _accountService.GetAccountById(id);
-        //    if (accountDto == null)
-        //    {
-        //        return NotFound();
-        //    }
+        // GET: api/Account/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAccountById(string id)
+        {
+            var accountDto = await _accountService.GetUserByIdAsync(id);
+            if (accountDto == null)
+            {
+                return NotFound();
+            }
 
-        //    return Ok(accountDto);
-        //}
+            return Ok(accountDto);
+        }
 
-        //// PUT: api/Account/5
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateAccount(int id, AccountDto accountDto)
-        //{
-        //    if (id != accountDto.Id)
-        //    {
-        //        return BadRequest();
-        //    }
+        [HttpPost("RegisterEmployee")]
+        public async Task<IActionResult> RegisterEmployee([FromBody] RegisterEmployeesDto registerDto)
+        {
+            var role = registerDto.Role;
 
-        //    var updated = await _accountService.UpdateAccount(id, accountDto);
+            if (string.IsNullOrEmpty(role))
+                return BadRequest("Roles cannot be left empty.");
 
-        //    if (!updated)
-        //    {
-        //        return NotFound();
-        //    }
+            try
+            {
+                var account = await _accountService.CreateEmployeeAsync(registerDto, role);
+                return CreatedAtAction(nameof(RegisterEmployee), account);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        //    return NoContent();
-        //}
+        // PUT: api/Account/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAccount(string id, AccountDto accountDto)
+        {
+            if (id != accountDto.UserId)
+            {
+                return BadRequest("User ID mismatch.");
+            }
 
-        //// DELETE: api/Account/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteAccount(int id)
-        //{
-        //    var deleted = await _accountService.DeleteAccount(id);
+            var updated = await _accountService.UpdateAccountAsync(id, accountDto);
 
-        //    if (!deleted)
-        //    {
-        //        return NotFound();
-        //    }
+            if (!updated)
+            {
+                return NotFound();
+            }
 
-        //    return NoContent();
-        //}
+            return NoContent();
+        }
+
+        // DELETE: api/Account/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAccount(string id)
+        {
+            var deleted = await _accountService.DeleteAccountAsync(id);
+
+            if (!deleted)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
     }
 }

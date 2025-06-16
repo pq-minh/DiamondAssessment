@@ -32,18 +32,17 @@ namespace DiamondAssessmentSystem.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Lỗi hệ thống: " + ex.Message });
+                return StatusCode(500, new { message = "System error: " + ex.Message });
             }
         }
 
-        // POST: api/Auth/RegisterCustomer
         [HttpPost("RegisterCustomer")]
-        public async Task<ActionResult<AccountDto>> RegisterCustomer([FromBody] RegisterDto registerDto)
+        public async Task<IActionResult> RegisterCustomer([FromBody] RegisterDto registerDto)
         {
             try
             {
-                var accountDto = await _authService.RegisterCustomerAsync(registerDto);
-                return Created(string.Empty, accountDto); // hoặc dùng CreatedAtAction nếu bạn có endpoint GetUserById
+                var message = await _authService.RegisterCustomerAsync(registerDto);
+                return Created(string.Empty, new { message });
             }
             catch (ArgumentException ex)
             {
@@ -51,9 +50,10 @@ namespace DiamondAssessmentSystem.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Lỗi hệ thống: " + ex.Message });
+                return StatusCode(500, new { message = "System error: " + ex.Message });
             }
         }
+
 
         //// POST: api/Auth/RegisterAdmin
         //[HttpPost("RegisterAdmin")]

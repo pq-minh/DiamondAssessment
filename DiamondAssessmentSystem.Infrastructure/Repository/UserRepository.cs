@@ -22,30 +22,38 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<IdentityResult> CreateUserWithRoleAsync(User user, string password, string role)
+        public async Task<IdentityResult> CreateEmployeeWithRoleAsync(User user, string password, string role)
         {
-            var createResult = await _userManager.CreateAsync(user, password);
-            if (!createResult.Succeeded) return createResult;
 
+            // Tạo user
+            var createResult = await _userManager.CreateAsync(user, password);
+            if (!createResult.Succeeded)
+                return createResult;
+
+            // Tạo role nếu chưa có
             if (!await _roleManager.RoleExistsAsync(role))
             {
-                await _roleManager.CreateAsync(new IdentityRole(role));
+                var roleCreateResult = await _roleManager.CreateAsync(new IdentityRole(role));
+                if (!roleCreateResult.Succeeded)
+                    return IdentityResult.Failed(roleCreateResult.Errors.ToArray());
             }
 
+            // Gán role cho user
             var roleResult = await _userManager.AddToRoleAsync(user, role);
-            if (!roleResult.Succeeded) return roleResult;
+            if (!roleResult.Succeeded)
+                return roleResult;
 
-            switch (user.UserType)
+            // Ghi vào bảng Employees nếu đúng UserType
+            if (user.UserType == "Employee")
             {
-                case "Customer":
-                    _context.Customers.Add(new Customer { UserId = user.Id });
-                    break;
-                case "Employee":
-                    _context.Employees.Add(new Employee { UserId = user.Id });
-                    break;
+                _context.Employees.Add(new Employee
+                {
+                    UserId = user.Id
+                });
+
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return IdentityResult.Success;
         }
 

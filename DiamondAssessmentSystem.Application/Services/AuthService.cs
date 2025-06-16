@@ -31,7 +31,7 @@ namespace DiamondAssessmentSystem.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<AccountDto> RegisterCustomerAsync(RegisterDto registerDto)
+        public async Task<String> RegisterCustomerAsync(RegisterDto registerDto)
         {
             var newUser = new User
             {
@@ -47,24 +47,19 @@ namespace DiamondAssessmentSystem.Application.Services
             if (!result.Succeeded)
             {
                 var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-                throw new Exception($"Không thể tạo tài khoản: {errors}");
+                throw new Exception($"Unable to create account: {errors}");
             }
 
             var roles = await _userRepository.GetUserRolesAsync(newUser);
 
-            return new AccountDto
-            {
-                UserId = newUser.Id,
-                Username = newUser.UserName,
-                Role = roles.FirstOrDefault() ?? "Customer"
-            };
+            return "Registration successful";
         }
 
         public async Task<LoginResponseDto> LoginAsync(LoginDto loginDto)
         {
             var user = await _userRepository.ValidateUserCredentialsAsync(loginDto.Username, loginDto.Password);
             if (user == null)
-                throw new UnauthorizedAccessException("Tên đăng nhập hoặc mật khẩu không chính xác.");
+                throw new UnauthorizedAccessException("Incorrect username or password.");
 
             var roles = await _userRepository.GetUserRolesAsync(user);
             var token = GenerateJwtToken(user, roles);

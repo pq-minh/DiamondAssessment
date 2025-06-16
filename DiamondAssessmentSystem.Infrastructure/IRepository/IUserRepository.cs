@@ -7,7 +7,7 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
 {
     public interface IUserRepository
     {
-        Task<IdentityResult> CreateUserWithRoleAsync(User user, string password, string role);
+        Task<IdentityResult> CreateEmployeeWithRoleAsync(User user, string password, string role);
         Task<List<User>> GetAllUsersAsync();
         Task<User?> GetUserByIdAsync(string userId);
         Task<bool> DeleteUserAsync(string userId);

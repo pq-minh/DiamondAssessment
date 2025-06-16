@@ -5,7 +5,7 @@ using DiamondAssessmentSystem.Infrastructure.Auth;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
 using DiamondAssessmentSystem.Infrastructure.Repository;
-using DiamondAssessmentSystem.Infrastructure.Seed;
+using DiamondAssessmentSystem.Infrastructure.SeedData;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -109,6 +109,7 @@ using (var scope = app.Services.CreateScope())
     var logger = services.GetRequiredService<ILogger<Program>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
+    await DbInitializer.SeedDefaultAdminAsync(services);
     await RoleSeeder.SeedRolesAsync(roleManager, logger);
 }
 

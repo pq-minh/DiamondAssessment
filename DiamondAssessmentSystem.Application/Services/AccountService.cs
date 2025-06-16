@@ -1,79 +1,114 @@
-﻿using DiamondAssessmentSystem.Application.DTO;
+﻿using AutoMapper;
+using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Application.Services
 {
     public class AccountService : IAccountService
     {
-        //private readonly IAccountRepository _accountRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
 
-        //public AccountService(IAccountRepository accountRepository)
-        //{
-        //    _accountRepository = accountRepository;
-        //}
+        public AccountService(IUserRepository userRepository, IMapper mapper)
+        {
+            _userRepository = userRepository;
+            _mapper = mapper;
+        }
 
-        //// Get all accounts
-        //public async Task<IEnumerable<AccountDto>> GetAccounts()
-        //{
-        //    var accounts = await _accountRepository.GetAccountsAsync();
-        //    var accountDtos = accounts.Select(a => new AccountDto
-        //    {
-        //        Id = a.AccId,
-        //        Username = a.Username,
-        //        Password = a.Password, // Never return password in production
-        //        Role = a.Role ?? 0
-        //    });
+        // Get all accounts (users)
+        public async Task<IEnumerable<AccountDto>> GetAllUsersAsync()
+        {
+            var users = await _userRepository.GetAllUsersAsync();
+            var result = new List<AccountDto>();
 
-        //    return accountDtos;
-        //}
+            foreach (var user in users)
+            {
+                var roles = await _userRepository.GetUserRolesAsync(user);
+                result.Add(new AccountDto
+                {
+                    UserId = user.Id,
+                    Username = user.UserName,
+                    Role = roles.FirstOrDefault() ?? "Unknown"
+                });
+            }
 
-        //// Get account by Id
-        //public async Task<AccountDto> GetAccountById(int id)
-        //{
-        //    var account = await _accountRepository.GetAccountByIdAsync(id);
-        //    if (account == null)
-        //    {
-        //        return null;
-        //    }
+            return result;
+        }
 
-        //    return new AccountDto
-        //    {
-        //        Id = account.AccId,
-        //        Username = account.Username,
-        //        Password = account.Password, // Never return password in production
-        //        Role = account.Role ?? 0
-        //    };
-        //}
+        // Get account by user ID
+        public async Task<AccountDto> GetUserByIdAsync(string id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null) return null;
 
-        //// Update an existing account
-        //public async Task<bool> UpdateAccount(int id, AccountDto accountDto)
-        //{
-        //    if (id != accountDto.Id)
-        //    {
-        //        throw new ArgumentException("Account ID mismatch.");
-        //    }
+            var roles = await _userRepository.GetUserRolesAsync(user);
+            return new AccountDto
+            {
+                UserId = user.Id,
+                Username = user.UserName,
+                Role = roles.FirstOrDefault() ?? "Unknown"
+            };
+        }
 
-        //    var account = new Account
-        //    {
-        //        AccId = id,
-        //        Username = accountDto.Username,
-        //        Password = accountDto.Password,
-        //        Role = accountDto.Role
-        //    };
+        public async Task<AccountDto> CreateEmployeeAsync(RegisterEmployeesDto dto, string role)
+        {
+            // Map từ DTO sang Entity User
+            var newUser = new User
+            {
+                UserName = dto.Username,
+                Email = dto.Email,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                PhoneNumber = dto.PhoneNumber,
+                UserType = "Employee",
+                Status = "Active"
+            };
 
-        //    var updated = await _accountRepository.UpdateAccountAsync(account);
-        //    return updated;
-        //}
+            var result = await _userRepository.CreateEmployeeWithRoleAsync(newUser, dto.Password, role);
+            if (!result.Succeeded)
+            {
+                var errorMessages = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new System.Exception($"Unable to create staff account: {errorMessages}");
+            }
 
-        //// Delete an account by ID
-        //public async Task<bool> DeleteAccount(int id)
-        //{
-        //    var deleted = await _accountRepository.DeleteAccountAsync(id);
-        //    return deleted;
-        //}
+            var roles = await _userRepository.GetUserRolesAsync(newUser);
+
+            return new AccountDto
+            {
+                UserId = newUser.Id,
+                Username = newUser.UserName,
+                Role = roles.FirstOrDefault() ?? role
+            };
+        }
+
+        // Update an existing user
+        public async Task<bool> UpdateAccountAsync(string id, AccountDto accountDto)
+        {
+            if (id != accountDto.UserId)
+                throw new ArgumentException("User ID mismatch.");
+
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null) return false;
+
+            user.UserName = accountDto.Username;
+            user.Email = accountDto.Email;
+
+            return await _userRepository.UpdateUserAsync(user);
+        }
+
+        // Delete an account by ID
+        public async Task<bool> DeleteAccountAsync(string id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null) return false;
+
+            return await _userRepository.DeleteUserAsync(id);
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using DiamondAssessmentSystem.Application.DTO;
+using DiamondAssessmentSystem.Infrastructure.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,11 @@ namespace DiamondAssessmentSystem.Application.Interfaces
 {
     public interface IAccountService
     {
-        //Task<IEnumerable<AccountDto>> GetAccounts();
-        //Task<AccountDto> GetAccountById(int id);
-        //Task<bool> UpdateAccount(int id, AccountDto accountDto);
-        //Task<bool> DeleteAccount(int id);
+        Task<IEnumerable<AccountDto>> GetAllUsersAsync();
+        Task<AccountDto> GetUserByIdAsync(string id);
+        Task<AccountDto> CreateEmployeeAsync(RegisterEmployeesDto dto, string role);
+        Task<bool> UpdateAccountAsync(string id, AccountDto accountDto);
+        Task<bool> DeleteAccountAsync(string id);
+
     }
 }
