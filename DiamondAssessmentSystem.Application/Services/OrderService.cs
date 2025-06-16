@@ -12,13 +12,12 @@ namespace DiamondAssessmentSystem.Application.Services
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
-        private readonly IOrderDetailRepository _orderDetailRepository;
+
         private readonly IMapper _mapper;
 
-        public OrderService(IOrderRepository orderRepository, IOrderDetailRepository orderDetailRepository, IMapper mapper)
+        public OrderService(IOrderRepository orderRepository, IMapper mapper)
         {
             _orderRepository = orderRepository;
-            _orderDetailRepository = orderDetailRepository;
             _mapper = mapper;
         }
 
@@ -63,14 +62,14 @@ namespace DiamondAssessmentSystem.Application.Services
                 .ToList();
 
             // Kiểm tra tính hợp lệ của các OrderDetailId
-            foreach (var orderDetailId in orderDetailIds)
-            {
-                var orderDetail = await _orderDetailRepository.GetOrderDetailByIdAsync(orderDetailId);
-                if (orderDetail == null)
-                {
-                    throw new ArgumentException($"OrderDetailId {orderDetailId} is invalid.");
-                }
-            }
+            //foreach (var orderDetailId in orderDetailIds)
+            //{
+            //    var orderDetail = await _orderDetailRepository.GetOrderDetailByIdAsync(orderDetailId);
+            //    if (orderDetail == null)
+            //    {
+            //        throw new ArgumentException($"OrderDetailId {orderDetailId} is invalid.");
+            //    }
+            //}
 
             var order = _mapper.Map<Order>(orderCreateDto); // Ánh xạ từ DTO sang Entity
 
@@ -97,14 +96,14 @@ namespace DiamondAssessmentSystem.Application.Services
             // Kiểm tra và cập nhật OrderDetailId
             var orderDetailIds = orderCreateDto.OrderDetailId.Split(',').Select(int.Parse).ToList();
 
-            foreach (var orderDetailId in orderDetailIds)
-            {
-                var orderDetail = await _orderDetailRepository.GetOrderDetailByIdAsync(orderDetailId);
-                if (orderDetail == null)
-                {
-                    throw new ArgumentException($"OrderDetailId {orderDetailId} is invalid.");
-                }
-            }
+            //foreach (var orderDetailId in orderDetailIds)
+            //{
+            //    var orderDetail = await _orderDetailRepository.GetOrderDetailByIdAsync(orderDetailId);
+            //    if (orderDetail == null)
+            //    {
+            //        throw new ArgumentException($"OrderDetailId {orderDetailId} is invalid.");
+            //    }
+            //}
 
             _mapper.Map(orderCreateDto, existingOrder); // Ánh xạ từ DTO vào Order Entity hiện tại
 
