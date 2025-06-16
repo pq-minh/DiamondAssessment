@@ -1,13 +1,16 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using DiamondAssessmentSystem.Infrastructure.IRepository;
-using DiamondAssessmentSystem.Infrastructure.Repository;
-using DiamondAssessmentSystem.Infrastructure.Models;
+﻿using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Application.Map;
 using DiamondAssessmentSystem.Application.Services;
-using DiamondAssessmentSystem.Application.Interfaces;
+using DiamondAssessmentSystem.Infrastructure.Auth;
+using DiamondAssessmentSystem.Infrastructure.IRepository;
+using DiamondAssessmentSystem.Infrastructure.Models;
+using DiamondAssessmentSystem.Infrastructure.Repository;
+using DiamondAssessmentSystem.Infrastructure.Seed;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,9 +34,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 
 // Repo
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBlogRepository, BlogRepository>();
-builder.Services.AddScoped<EmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<ICertificateRepository, CertificateRepository>();
 builder.Services.AddScoped<IResultRepository, ResultRepository>();
 builder.Services.AddScoped<IServicePriceRepository, ServicePriceRepository>();
@@ -42,6 +44,19 @@ builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 builder.Services.AddScoped<IRequestRepository, RequestRepository>();
+
+
+// Cấu hình Identity
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<DiamondAssessmentDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+});
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -86,6 +101,15 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    await RoleSeeder.SeedRolesAsync(roleManager, logger);
 }
 
 app.UseHttpsRedirection();

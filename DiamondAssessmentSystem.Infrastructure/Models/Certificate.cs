@@ -9,6 +9,8 @@ public partial class Certificate
 
     public int ResultId { get; set; }
 
+    public string? CertificateNumber { get; set; }
+
     public DateOnly IssueDate { get; set; }
 
     public virtual Result Result { get; set; } = null!;

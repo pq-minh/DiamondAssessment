@@ -11,6 +11,8 @@ public partial class CommitmentRecord
 
     public DateOnly CommitDate { get; set; }
 
+    public string? CommitmentReason { get; set; }
+
     public int? ApprovedBy { get; set; }
 
     public DateTime? ApprovedDate { get; set; }
@@ -18,8 +20,6 @@ public partial class CommitmentRecord
     public string Status { get; set; } = null!;
 
     public virtual Employee? ApprovedByNavigation { get; set; }
-
-    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual Request Request { get; set; } = null!;
 }

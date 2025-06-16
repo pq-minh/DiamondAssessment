@@ -17,6 +17,8 @@ public partial class Blog
 
     public DateTime? UpdatedDate { get; set; }
 
+    public string? BlogType { get; set; }
+
     public string Status { get; set; } = null!;
 
     public virtual Employee Employee { get; set; } = null!;

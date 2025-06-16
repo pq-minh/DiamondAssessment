@@ -21,7 +21,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return await _context.Requests
                 .Include(r => r.Customer)              // Liên kết với Customer (Khách hàng)
                 .Include(r => r.Employee)              // Liên kết với Employee (Nhân viên)
-                .Include(r => r.Receipts)              // Liên kết với Receipts (Biên nhận)
+                //.Include(r => r.Receipts)              // Liên kết với Receipts (Biên nhận)
                 .Include(r => r.CommitmentRecords)     // Liên kết với CommitmentRecords (Cam kết)
                 .Include(r => r.SealingRecords)        // Liên kết với SealingRecords (Niêm phong)
                 .ToListAsync();
@@ -33,7 +33,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return await _context.Requests
                 .Include(r => r.Customer)
                 .Include(r => r.Employee)
-                .Include(r => r.Receipts)
+                //.Include(r => r.Receipts)
                 .Include(r => r.CommitmentRecords)
                 .Include(r => r.SealingRecords)
                 .FirstOrDefaultAsync(r => r.RequestId == id);

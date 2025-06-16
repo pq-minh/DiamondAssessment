@@ -18,11 +18,9 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         public async Task<IEnumerable<Order>> GetOrdersAsync()
         {
             return await _context.Orders
-                .Include(o => o.Customer)         // Bao gồm thông tin khách hàng
-                .Include(o => o.Commitment)       // Bao gồm thông tin cam kết
-                .Include(o => o.Consultant)       // Bao gồm thông tin nhân viên tư vấn
-                .Include(o => o.Receipt)          // Bao gồm thông tin biên nhận
-                .Include(o => o.Sealing)          // Bao gồm thông tin biên bản niêm phong
+                .Include(o => o.Customer)       
+                .Include(o => o.Payments)
+                .Include(o => o.Service)
                 .ToListAsync();
         }
 
@@ -30,10 +28,8 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         {
             return await _context.Orders
                 .Include(o => o.Customer)
-                .Include(o => o.Commitment)
-                .Include(o => o.Consultant)
-                .Include(o => o.Receipt)
-                .Include(o => o.Sealing)
+                .Include(o => o.Payments)
+                .Include(o => o.Service)
                 .FirstOrDefaultAsync(o => o.OrderId == id);
         }
 

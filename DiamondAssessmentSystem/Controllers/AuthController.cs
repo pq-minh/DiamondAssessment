@@ -1,6 +1,7 @@
 ﻿using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Controllers
@@ -9,55 +10,67 @@ namespace DiamondAssessmentSystem.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        //private readonly IAuthService _authService;
+        private readonly IAuthService _authService;
 
-        //public AuthController(IAuthService authService)
-        //{
-        //    _authService = authService;
-        //}
+        public AuthController(IAuthService authService)
+        {
+            _authService = authService;
+        }
 
-        //// POST: api/Auth/Login
-        //[HttpPost("Login")]
-        //public async Task<IActionResult> Login(LoginDto loginDto)
-        //{
-        //    try
-        //    {
-        //        var loginResponse = await _authService.Login(loginDto);
-        //        return Ok(loginResponse);
-        //    }
-        //    catch (UnauthorizedAccessException ex)
-        //    {
-        //        return Unauthorized(ex.Message);
-        //    }
-        //}
+        // POST: api/Auth/Login
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        {
+            try
+            {
+                var loginResponse = await _authService.LoginAsync(loginDto);
+                return Ok(loginResponse);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
-        //// POST: api/Auth/RegisterCustomer
-        //[HttpPost("RegisterCustomer")]
-        //public async Task<ActionResult<AccountDto>> RegisterCustomer(RegisterDto registerDto)
-        //{
-        //    try
-        //    {
-        //        var accountDto = await _authService.RegisterCustomer(registerDto);
-        //        return CreatedAtAction(nameof(RegisterCustomer), accountDto);
-        //    }
-        //    catch (ArgumentException ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
+        // POST: api/Auth/RegisterCustomer
+        [HttpPost("RegisterCustomer")]
+        public async Task<ActionResult<AccountDto>> RegisterCustomer([FromBody] RegisterDto registerDto)
+        {
+            try
+            {
+                var accountDto = await _authService.RegisterCustomerAsync(registerDto);
+                return Created(string.Empty, accountDto); // hoặc dùng CreatedAtAction nếu bạn có endpoint GetUserById
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
 
         //// POST: api/Auth/RegisterAdmin
         //[HttpPost("RegisterAdmin")]
-        //public async Task<ActionResult<AccountDto>> RegisterAdmin(AccountDto registerDto)
+        //public async Task<ActionResult<AccountDto>> RegisterAdmin([FromBody] AccountDto registerDto)
         //{
         //    try
         //    {
-        //        var accountDto = await _authService.RegisterAdmin(registerDto);
-        //        return CreatedAtAction(nameof(RegisterAdmin), accountDto);
+        //        var accountDto = await _authService.RegisterAdminAsync(registerDto);
+        //        return Created(string.Empty, accountDto);
         //    }
         //    catch (ArgumentException ex)
         //    {
-        //        return BadRequest(ex.Message);
+        //        return BadRequest(new { message = ex.Message });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { message = "Lỗi hệ thống: " + ex.Message });
         //    }
         //}
     }

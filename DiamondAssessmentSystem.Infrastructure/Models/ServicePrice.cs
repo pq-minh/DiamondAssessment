@@ -19,7 +19,9 @@ public partial class ServicePrice
 
     public virtual Employee Employee { get; set; } = null!;
 
-    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+
+    public virtual ICollection<Request> Requests { get; set; } = new List<Request>();
 
     public virtual ICollection<ServicePriceAudit> ServicePriceAudits { get; set; } = new List<ServicePriceAudit>();
 }

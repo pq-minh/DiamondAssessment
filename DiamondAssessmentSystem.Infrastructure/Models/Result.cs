@@ -37,7 +37,5 @@ public partial class Result
 
     public virtual ICollection<Certificate> Certificates { get; set; } = new List<Certificate>();
 
-    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
-
     public virtual Request Request { get; set; } = null!;
 }

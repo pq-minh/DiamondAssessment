@@ -2,13 +2,12 @@
 {
     public class AccountDto
     {
-        public int Id { get; set; } // Add the Id property
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public int Role { get; set; }
+        public string UserId { get; set; }
+        public string Username { get; set; } = null!;
+        public string Role { get; set; }
     }
 
-    public enum Role
+    public enum RoleEnum
     {
         Customer = 1,
         Admin = 2,

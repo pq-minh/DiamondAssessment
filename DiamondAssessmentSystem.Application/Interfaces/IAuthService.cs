@@ -10,11 +10,8 @@ namespace DiamondAssessmentSystem.Application.Interfaces
 {
     public interface IAuthService
     {
-        //Task<LoginResponseDto> Login(LoginDto loginDto);
-
-        //Task<AccountDto> RegisterCustomer(RegisterDto registerDto);
-
-        //Task<AccountDto> RegisterAdmin(AccountDto registerDto);
+        Task<AccountDto> RegisterCustomerAsync(RegisterDto registerDto);
+        Task<LoginResponseDto> LoginAsync(LoginDto loginDto);
 
     }
 }

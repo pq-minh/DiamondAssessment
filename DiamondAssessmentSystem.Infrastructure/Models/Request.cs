@@ -9,9 +9,11 @@ public partial class Request
 
     public int CustomerId { get; set; }
 
+    public int ServiceId { get; set; }
+
     public DateOnly RequestDate { get; set; }
 
-    public string ServiceType { get; set; } = null!;
+    public string? RequestType { get; set; }
 
     public int? EmployeeId { get; set; }
 
@@ -25,9 +27,9 @@ public partial class Request
 
     public virtual Employee? Employee { get; set; }
 
-    public virtual ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
-
     public virtual ICollection<Result> Results { get; set; } = new List<Result>();
 
     public virtual ICollection<SealingRecord> SealingRecords { get; set; } = new List<SealingRecord>();
+
+    public virtual ServicePrice Service { get; set; } = null!;
 }

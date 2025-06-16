@@ -11,10 +11,10 @@ namespace DiamondAssessmentSystem.Application.Services
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _employeeRepository;
-        private readonly IAccountRepository _accountRepository;
+        private readonly IUserRepository _accountRepository;
         private readonly IMapper _mapper;
 
-        public EmployeeService(IEmployeeRepository employeeRepository, IAccountRepository accountRepository, IMapper mapper)
+        public EmployeeService(IEmployeeRepository employeeRepository, IUserRepository accountRepository, IMapper mapper)
         {
             _employeeRepository = employeeRepository;
             _accountRepository = accountRepository;
