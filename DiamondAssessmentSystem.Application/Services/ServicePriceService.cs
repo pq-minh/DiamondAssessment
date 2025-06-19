@@ -51,7 +51,7 @@ namespace DiamondAssessmentSystem.Application.Services
         }
 
         // PUT: api/ServicePrices/{id}
-        public async Task<bool> PutServicePrice(int id, ServicePriceCreateDto servicePriceCreateDto)
+        public async Task<bool> UpdateServicePrice(int id, ServicePriceCreateDto servicePriceCreateDto)
         {
             var existingServicePrice = await _servicePriceRepository.GetServicePriceByIdAsync(id);
 

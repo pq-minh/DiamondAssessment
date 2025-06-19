@@ -20,7 +20,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return await _context.ServicePrices.ToListAsync();
         }
 
-        public async Task<ServicePrice> GetServicePriceByIdAsync(int id)
+        public async Task<ServicePrice?> GetServicePriceByIdAsync(int id)
         {
             return await _context.ServicePrices.FindAsync(id);
         }
@@ -43,8 +43,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             }
             catch (DbUpdateConcurrencyException)
             {
-                // Sửa lại điều kiện kiểm tra
-                if (!await ServicePriceExistsAsync(servicePrice.ServiceId))  // Sử dụng ServiceId thay vì ServicePriceId
+                if (!await ServicePriceExistsAsync(servicePrice.ServiceId)) 
                 {
                     return false;
                 }
@@ -67,8 +66,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
 
         private async Task<bool> ServicePriceExistsAsync(int id)
         {
-            // Sửa lại điều kiện kiểm tra
-            return await _context.ServicePrices.AnyAsync(e => e.ServiceId == id);  // Sử dụng ServiceId thay vì ServicePriceId
+            return await _context.ServicePrices.AnyAsync(e => e.ServiceId == id); 
         }
     }
 }

@@ -65,14 +65,14 @@ namespace DiamondAssessmentSystem.WebAPI.Controllers
 
         // PUT: api/ServicePrice/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutServicePrice(int id, ServicePriceCreateDto servicePriceCreateDto)
+        public async Task<IActionResult> UpdateServicePrice(int id, ServicePriceCreateDto servicePriceCreateDto)
         {
             if (servicePriceCreateDto == null)
             {
                 return BadRequest("Invalid service price data.");
             }
 
-            var updated = await _servicePriceService.PutServicePrice(id, servicePriceCreateDto);
+            var updated = await _servicePriceService.UpdateServicePrice(id, servicePriceCreateDto);
 
             if (!updated)
             {

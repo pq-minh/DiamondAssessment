@@ -32,6 +32,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // Repo
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -43,7 +44,10 @@ builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IRequestRepository, RequestRepository>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
 
+// Cấu hình http
+builder.Services.AddHttpContextAccessor();
 
 // Cấu hình Identity
 builder.Services.AddIdentity<User, IdentityRole>()

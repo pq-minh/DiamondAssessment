@@ -12,6 +12,12 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
         // Lấy thông tin chi tiết một yêu cầu theo ID
         Task<Request> GetRequestByIdAsync(int id);
 
+        Task<IEnumerable<Request>> GetRequestsByCustomerIdAsync(int customerId);
+
+        Task<Request> CreateDraftRequestAsync(Request request);
+
+        Task<bool> CancelRequestAsync(int requestId);
+
         // Tạo một yêu cầu mới
         Task<Request> CreateRequestAsync(Request request);
 

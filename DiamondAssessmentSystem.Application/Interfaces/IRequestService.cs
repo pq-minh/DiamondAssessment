@@ -9,19 +9,13 @@ namespace DiamondAssessmentSystem.Application.Interfaces
 {
     public interface IRequestService
     {
-        // Lấy danh sách tất cả form
         Task<IEnumerable<RequestDto>> GetFormsAsync();
-
-        // Lấy form theo ID
         Task<RequestDto> GetFormByIdAsync(int id);
-
-        // Tạo một form mới
+        Task<IEnumerable<RequestDto>> GetRequestsByCustomerIdAsync(int customerId);
         Task<RequestDto> CreateFormAsync(RequestCreateDto formCreateDto);
-
-        // Cập nhật form
+        Task<RequestDto> CreateDraftRequestAsync(RequestCreateDto draftDto);
+        Task<bool> CancelRequestAsync(int requestId);
         Task<bool> UpdateFormAsync(int id, RequestCreateDto formCreateDto);
-
-        // Xóa form theo ID
         Task<bool> DeleteFormAsync(int id);
     }
 }

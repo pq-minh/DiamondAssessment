@@ -1,7 +1,8 @@
-﻿using DiamondAssessmentSystem.Application.DTO;
+﻿    using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Controllers
@@ -10,64 +11,97 @@ namespace DiamondAssessmentSystem.Controllers
     [ApiController]
     public class RequestController : ControllerBase
     {
-        private readonly IRequestService _formService;
+        private readonly IRequestService _requestService;
 
-        public RequestController(IRequestService formService)
+        public RequestController(IRequestService requestService)
         {
-            _formService = formService;
+            _requestService = requestService;
         }
 
-        // GET: api/Form
+        // GET: api/request
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RequestDto>>> GetForms()
+        public async Task<ActionResult<IEnumerable<RequestDto>>> GetRequests()
         {
-            var forms = await _formService.GetFormsAsync();
-            return Ok(forms);
+            var requests = await _requestService.GetFormsAsync();
+            return Ok(requests);
         }
 
-        // GET: api/Form/5
+        // GET: api/request/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<RequestDto>> GetForm(int id)
+        public async Task<ActionResult<RequestDto>> GetRequest(int id)
         {
-            var form = await _formService.GetFormByIdAsync(id);
-            if (form == null)
-            {
+            var request = await _requestService.GetFormByIdAsync(id);
+            if (request == null)
                 return NotFound();
-            }
 
-            return Ok(form);
+            return Ok(request);
         }
 
-        // POST: api/Form
+        // GET: api/request/my-requests
+        [HttpGet("my-requests")]
+        public async Task<ActionResult<IEnumerable<RequestDto>>> GetMyRequests()
+        {
+            var userIdClaim = User.FindFirst("sub")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            if (!int.TryParse(userIdClaim, out int customerId))
+                return Unauthorized();
+
+            var requests = await _requestService.GetRequestsByCustomerIdAsync(customerId);
+            return Ok(requests);
+        }
+
+        // POST: api/request
         [HttpPost]
-        public async Task<ActionResult<RequestDto>> PostForm(RequestCreateDto formCreateDto)
+        public async Task<ActionResult<RequestDto>> CreateRequest(RequestCreateDto createDto)
         {
-            var createdForm = await _formService.CreateFormAsync(formCreateDto);
-            return CreatedAtAction(nameof(GetForm), new { id = createdForm.FormId }, createdForm);
+            var created = await _requestService.CreateFormAsync(createDto);
+            return CreatedAtAction(nameof(GetRequest), new { id = created.FormId }, created);
         }
 
-        // PUT: api/Form/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutForm(int id, RequestCreateDto formCreateDto)
+        // POST: api/request/draft
+        [HttpPost("draft")]
+        public async Task<ActionResult<RequestDto>> CreateDraftRequest(RequestCreateDto draftDto)
         {
-            var updated = await _formService.UpdateFormAsync(id, formCreateDto);
+            var userIdClaim = User.FindFirst("sub")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null || !int.TryParse(userIdClaim, out int customerId))
+                return Unauthorized();
+
+            draftDto.CustomerId = customerId; // gán customerId từ JWT
+            var draft = await _requestService.CreateDraftRequestAsync(draftDto);
+            return Ok(draft);
+        }
+
+        // POST: api/request/{id}/cancel
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> CancelRequest(int id)
+        {
+            var success = await _requestService.CancelRequestAsync(id);
+            if (!success)
+                return BadRequest("Cancellation is only possible when the request is in 'Draft' status.");
+
+            return Ok();
+        }
+
+        // PUT: api/request/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateRequest(int id, RequestCreateDto updateDto)
+        {
+            var updated = await _requestService.UpdateFormAsync(id, updateDto);
             if (!updated)
-            {
                 return NotFound();
-            }
 
             return NoContent();
         }
 
-        // DELETE: api/Form/5
+        // DELETE: api/request/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteForm(int id)
+        public async Task<IActionResult> DeleteRequest(int id)
         {
-            var deleted = await _formService.DeleteFormAsync(id);
+            var deleted = await _requestService.DeleteFormAsync(id);
             if (!deleted)
-            {
                 return NotFound();
-            }
 
             return NoContent();
         }

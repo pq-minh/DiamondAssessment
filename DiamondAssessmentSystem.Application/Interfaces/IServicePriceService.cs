@@ -15,7 +15,7 @@ namespace DiamondAssessmentSystem.Application.Interfaces
 
         Task<ServicePriceDto> PostServicePrice(ServicePriceCreateDto servicePriceCreateDto);
 
-        Task<bool> PutServicePrice(int id, ServicePriceCreateDto servicePriceCreateDto);
+        Task<bool> UpdateServicePrice(int id, ServicePriceCreateDto servicePriceCreateDto);
 
         Task<bool> DeleteServicePrice(int id);
     }

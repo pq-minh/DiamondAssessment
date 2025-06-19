@@ -24,6 +24,15 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Order>> GetOrdersByCustomers(int customerId)
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.Payments)
+                .Include(o => o.Service)
+                .ToListAsync();
+        }
+
         public async Task<Order> GetOrderByIdAsync(int id)
         {
             return await _context.Orders

@@ -18,18 +18,18 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         public async Task<IEnumerable<Customer>> GetCustomersAsync()
         {
             return await _context.Customers
-                                 .Include(c => c.ChatLogs)      // Bao gồm mối quan hệ với ChatLogs
-                                 .Include(c => c.Orders)        // Bao gồm mối quan hệ với Orders
-                                 .Include(c => c.Requests)      // Bao gồm mối quan hệ với Requests
+                                 .Include(c => c.ChatLogs)      
+                                 .Include(c => c.Orders)        
+                                 .Include(c => c.Requests)      
                                  .ToListAsync();
         }
 
-        public async Task<Customer> GetCustomerByIdAsync(int id)
+        public async Task<Customer?> GetCustomerByIdAsync(int id)
         {
             return await _context.Customers
-                                 .Include(c => c.ChatLogs)      // Bao gồm mối quan hệ với ChatLogs
-                                 .Include(c => c.Orders)        // Bao gồm mối quan hệ với Orders
-                                 .Include(c => c.Requests)      // Bao gồm mối quan hệ với Requests
+                                 .Include(c => c.ChatLogs)      
+                                 .Include(c => c.Orders)        
+                                 .Include(c => c.Requests)      
                                  .FirstOrDefaultAsync(c => c.CustomerId == id);
         }
 

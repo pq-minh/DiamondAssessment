@@ -61,16 +61,6 @@ namespace DiamondAssessmentSystem.Application.Services
                 .Select(int.Parse)
                 .ToList();
 
-            // Kiểm tra tính hợp lệ của các OrderDetailId
-            //foreach (var orderDetailId in orderDetailIds)
-            //{
-            //    var orderDetail = await _orderDetailRepository.GetOrderDetailByIdAsync(orderDetailId);
-            //    if (orderDetail == null)
-            //    {
-            //        throw new ArgumentException($"OrderDetailId {orderDetailId} is invalid.");
-            //    }
-            //}
-
             var order = _mapper.Map<Order>(orderCreateDto); // Ánh xạ từ DTO sang Entity
 
             var createdOrder = await _orderRepository.CreateOrderAsync(order);

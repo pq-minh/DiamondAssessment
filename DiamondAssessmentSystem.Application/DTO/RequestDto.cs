@@ -13,6 +13,7 @@ namespace DiamondAssessmentSystem.Application.DTO
 
     public class RequestCreateDto
     {
+        public int CustomerId { get; set; }
         public string FormType { get; set; }
         public DateOnly CreateDate { get; set; }
     }
