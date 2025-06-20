@@ -11,7 +11,7 @@ public partial class Certificate
 
     public string? CertificateNumber { get; set; }
 
-    public DateOnly IssueDate { get; set; }
+    public DateTime IssueDate { get; set; }
 
     public virtual Result Result { get; set; } = null!;
 }

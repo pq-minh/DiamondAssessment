@@ -12,12 +12,13 @@ namespace DiamondAssessmentSystem.Application.Services
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
-
+        private readonly ICurrentUserService _currentUser;
         private readonly IMapper _mapper;
 
-        public OrderService(IOrderRepository orderRepository, IMapper mapper)
+        public OrderService(IOrderRepository orderRepository, IMapper mapper, ICurrentUserService currentUser)
         {
             _orderRepository = orderRepository;
+            _currentUser = currentUser;
             _mapper = mapper;
         }
 
@@ -39,6 +40,12 @@ namespace DiamondAssessmentSystem.Application.Services
             }
 
             return _mapper.Map<OrderDto>(order); // Ánh xạ từ Order sang OrderDto
+        }
+
+        public async Task<int> GetCurentOrderId()
+        {
+            var orderId = await _orderRepository.GetCurentOrderId(_currentUser.UserId);
+            return orderId;
         }
 
         // POST: api/Order

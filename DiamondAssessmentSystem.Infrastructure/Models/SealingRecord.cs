@@ -9,7 +9,7 @@ public partial class SealingRecord
 
     public int RequestId { get; set; }
 
-    public DateOnly SealDate { get; set; }
+    public DateTime SealDate { get; set; }
 
     public string? SealingReason { get; set; }
 

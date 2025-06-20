@@ -10,13 +10,13 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
         Task<IEnumerable<Request>> GetRequestsAsync();
 
         // Lấy thông tin chi tiết một yêu cầu theo ID
-        Task<Request> GetRequestByIdAsync(int id);
+        Task<Request?> GetRequestByIdAsync(int id);
 
-        Task<IEnumerable<Request>> GetRequestsByCustomerIdAsync(int customerId);
+        Task<IEnumerable<Request>> GetRequestsByCustomerIdAsync(string userId);
 
-        Task<Request> CreateDraftRequestAsync(Request request);
+        Task<bool> CreateDraftRequest(string userId, Request request);
 
-        Task<bool> CancelRequestAsync(int requestId);
+        Task<bool> CancelRequestAsync(string userId, int requestId);
 
         // Tạo một yêu cầu mới
         Task<Request> CreateRequestAsync(Request request);
@@ -24,7 +24,5 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
         // Cập nhật một yêu cầu
         Task<bool> UpdateRequestAsync(Request request);
 
-        // Xóa một yêu cầu
-        Task<bool> DeleteRequestAsync(int id);
     }
 }

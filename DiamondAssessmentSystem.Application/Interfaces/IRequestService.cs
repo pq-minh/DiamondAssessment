@@ -11,11 +11,10 @@ namespace DiamondAssessmentSystem.Application.Interfaces
     {
         Task<IEnumerable<RequestDto>> GetFormsAsync();
         Task<RequestDto> GetFormByIdAsync(int id);
-        Task<IEnumerable<RequestDto>> GetRequestsByCustomerIdAsync(int customerId);
+        Task<IEnumerable<RequestDto>> GetRequestsByCustomerIdAsync(string userId);
         Task<RequestDto> CreateFormAsync(RequestCreateDto formCreateDto);
-        Task<RequestDto> CreateDraftRequestAsync(RequestCreateDto draftDto);
-        Task<bool> CancelRequestAsync(int requestId);
+        Task<bool> CreateDraftRequestAsync(string userId, RequestCreateDto draftDto);
+        Task<bool> CancelRequest(string userId, int requestId);
         Task<bool> UpdateFormAsync(int id, RequestCreateDto formCreateDto);
-        Task<bool> DeleteFormAsync(int id);
     }
 }

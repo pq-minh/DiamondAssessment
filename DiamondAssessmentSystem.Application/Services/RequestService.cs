@@ -37,26 +37,27 @@ namespace DiamondAssessmentSystem.Application.Services
         }
 
         // Lấy yêu cầu theo CustomerId (lịch sử của người dùng)
-        public async Task<IEnumerable<RequestDto>> GetRequestsByCustomerIdAsync(int customerId)
+        public async Task<IEnumerable<RequestDto>> GetRequestsByCustomerIdAsync(string userId)
         {
-            var requests = await _requestRepository.GetRequestsByCustomerIdAsync(customerId);
+            var requests = await _requestRepository.GetRequestsByCustomerIdAsync(userId);
             return _mapper.Map<IEnumerable<RequestDto>>(requests);
         }
 
         // Tạo một bản nháp yêu cầu mới
-        public async Task<RequestDto> CreateDraftRequestAsync(RequestCreateDto draftDto)
+        public async Task<bool> CreateDraftRequestAsync(string userId, RequestCreateDto draftDto)
         {
             var draft = _mapper.Map<Request>(draftDto);
-            draft.Status = "Draft"; // đảm bảo trạng thái là bản nháp
+            draft.Status = "Draft";
 
-            var created = await _requestRepository.CreateDraftRequestAsync(draft);
-            return _mapper.Map<RequestDto>(created);
+            var res = await _requestRepository.CreateDraftRequest(userId, draft);
+ 
+            return res;
         }
 
         // Hủy yêu cầu nếu nó là bản nháp
-        public async Task<bool> CancelRequestAsync(int requestId)
+        public async Task<bool> CancelRequest(string userId, int requestId)
         {
-            return await _requestRepository.CancelRequestAsync(requestId);
+            return await _requestRepository.CancelRequestAsync(userId, requestId);
         }
 
         // Tạo yêu cầu chính thức
@@ -76,12 +77,6 @@ namespace DiamondAssessmentSystem.Application.Services
 
             _mapper.Map(formCreateDto, existingForm);
             return await _requestRepository.UpdateRequestAsync(existingForm);
-        }
-
-        // Xóa yêu cầu
-        public async Task<bool> DeleteFormAsync(int id)
-        {
-            return await _requestRepository.DeleteRequestAsync(id);
         }
     }
 }

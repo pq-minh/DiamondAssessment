@@ -66,10 +66,12 @@ namespace DiamondAssessmentSystem.Application.Map
             CreateMap<RegisterDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username));
 
-            // Tùy chọn: Map User -> AccountDto nếu muốn dùng AutoMapper thay vì thủ công
             CreateMap<User, AccountDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName));
+
+            CreateMap<Request, RequestDto>().ReverseMap();
+            CreateMap<Request, RequestCreateDto>().ReverseMap();
         }
     }
 }

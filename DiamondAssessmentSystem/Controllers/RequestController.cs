@@ -1,5 +1,6 @@
 ﻿    using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -12,13 +13,16 @@ namespace DiamondAssessmentSystem.Controllers
     public class RequestController : ControllerBase
     {
         private readonly IRequestService _requestService;
+        private readonly ICurrentUserService _currentUser;
 
-        public RequestController(IRequestService requestService)
+        public RequestController(IRequestService requestService, ICurrentUserService currentUser)
         {
             _requestService = requestService;
+            _currentUser = currentUser;
         }
 
         // GET: api/request
+        //[Authorize(Roles = "Consultant")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RequestDto>>> GetRequests()
         {
@@ -27,6 +31,7 @@ namespace DiamondAssessmentSystem.Controllers
         }
 
         // GET: api/request/{id}
+        //[Authorize(Roles = "Consultant")]
         [HttpGet("{id}")]
         public async Task<ActionResult<RequestDto>> GetRequest(int id)
         {
@@ -39,37 +44,35 @@ namespace DiamondAssessmentSystem.Controllers
 
         // GET: api/request/my-requests
         [HttpGet("my-requests")]
-        public async Task<ActionResult<IEnumerable<RequestDto>>> GetMyRequests()
+        public async Task<ActionResult<IEnumerable<RequestDto>>> GetCustomerRequests()
         {
-            var userIdClaim = User.FindFirst("sub")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userIdClaim = _currentUser.UserId;
+
             if (userIdClaim == null)
                 return Unauthorized();
 
-            if (!int.TryParse(userIdClaim, out int customerId))
-                return Unauthorized();
-
-            var requests = await _requestService.GetRequestsByCustomerIdAsync(customerId);
+            var requests = await _requestService.GetRequestsByCustomerIdAsync(userIdClaim);
             return Ok(requests);
         }
 
         // POST: api/request
-        [HttpPost]
-        public async Task<ActionResult<RequestDto>> CreateRequest(RequestCreateDto createDto)
-        {
-            var created = await _requestService.CreateFormAsync(createDto);
-            return CreatedAtAction(nameof(GetRequest), new { id = created.FormId }, created);
-        }
+        //[HttpPost]
+        //public async Task<ActionResult<RequestDto>> CreateRequest(RequestCreateDto createDto)
+        //{
+        //    var created = await _requestService.CreateFormAsync(createDto);
+        //    return CreatedAtAction(nameof(GetRequest), new { id = created.FormId }, created);
+        //}
 
         // POST: api/request/draft
-        [HttpPost("draft")]
+        [HttpPost]
         public async Task<ActionResult<RequestDto>> CreateDraftRequest(RequestCreateDto draftDto)
         {
-            var userIdClaim = User.FindFirst("sub")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null || !int.TryParse(userIdClaim, out int customerId))
+            var userIdClaim = _currentUser.UserId;
+
+            if (userIdClaim == null)
                 return Unauthorized();
 
-            draftDto.CustomerId = customerId; // gán customerId từ JWT
-            var draft = await _requestService.CreateDraftRequestAsync(draftDto);
+            var draft = await _requestService.CreateDraftRequestAsync(userIdClaim, draftDto);
             return Ok(draft);
         }
 
@@ -77,7 +80,12 @@ namespace DiamondAssessmentSystem.Controllers
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> CancelRequest(int id)
         {
-            var success = await _requestService.CancelRequestAsync(id);
+            var userIdClaim = _currentUser.UserId;
+
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var success = await _requestService.CancelRequest(userIdClaim, id);
             if (!success)
                 return BadRequest("Cancellation is only possible when the request is in 'Draft' status.");
 
@@ -85,22 +93,12 @@ namespace DiamondAssessmentSystem.Controllers
         }
 
         // PUT: api/request/{id}
+        //[Authorize(Roles = "Consultant")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRequest(int id, RequestCreateDto updateDto)
         {
             var updated = await _requestService.UpdateFormAsync(id, updateDto);
             if (!updated)
-                return NotFound();
-
-            return NoContent();
-        }
-
-        // DELETE: api/request/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRequest(int id)
-        {
-            var deleted = await _requestService.DeleteFormAsync(id);
-            if (!deleted)
                 return NotFound();
 
             return NoContent();

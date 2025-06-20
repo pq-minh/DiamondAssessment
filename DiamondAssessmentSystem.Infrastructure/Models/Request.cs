@@ -11,7 +11,7 @@ public partial class Request
 
     public int ServiceId { get; set; }
 
-    public DateOnly RequestDate { get; set; }
+    public DateTime RequestDate { get; set; }
 
     public string? RequestType { get; set; }
 
