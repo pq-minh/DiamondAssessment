@@ -1,0 +1,20 @@
+﻿using DiamondAssessmentSystem.Infrastructure.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DiamondAssessmentSystem.Application.DTO
+{
+    public class CreateMessageDTO
+    {
+        public int SenderId { get; set; }
+        public SenderRole SenderRole { get; set; }
+        public MessageType MessageType { get; set; }
+        public string? Message { get; set; }
+        public string? FilePath { get; set; }
+        public string? FileName { get; set; }
+        public int? FileSize { get; set; }
+    }
+}
