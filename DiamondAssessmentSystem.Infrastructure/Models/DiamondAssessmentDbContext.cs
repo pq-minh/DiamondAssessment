@@ -99,6 +99,11 @@ public partial class DiamondAssessmentDbContext : IdentityDbContext<User>
                 .HasForeignKey(d => d.ResultId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Certifica__resul__5812160E");
+
+            entity.HasOne(c => c.ApprovedByEmployee)
+              .WithMany()
+              .HasForeignKey(c => c.ApprovedBy)
+              .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<ChatLog>(entity =>

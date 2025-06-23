@@ -34,6 +34,19 @@ namespace DiamondAssessmentSystem.WebAPI.Controllers
             return Ok(servicePrices);
         }
 
+        [HttpGet("act")]
+        public async Task<ActionResult<IEnumerable<ServicePriceDto>>> GetServicePrices(string status)
+        {
+            var servicePrices = await _servicePriceService.GetServicePrices(status);
+
+            if (servicePrices == null)
+            {
+                return NotFound("No service prices found.");
+            }
+
+            return Ok(servicePrices);
+        }
+
         // GET: api/ServicePrice/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ServicePriceDto>> GetServicePrice(int id)
@@ -60,7 +73,7 @@ namespace DiamondAssessmentSystem.WebAPI.Controllers
             var createdServicePriceDto = await _servicePriceService.PostServicePrice(servicePriceCreateDto);
 
             // Return the created resource with a Location header pointing to the newly created resource
-            return CreatedAtAction(nameof(GetServicePrice), new { id = createdServicePriceDto.ServicePriceId }, createdServicePriceDto);
+            return CreatedAtAction(nameof(GetServicePrice), new { id = createdServicePriceDto.ServiceId }, createdServicePriceDto);
         }
 
         // PUT: api/ServicePrice/{id}
@@ -82,7 +95,6 @@ namespace DiamondAssessmentSystem.WebAPI.Controllers
             return NoContent();
         }
 
-        // DELETE: api/ServicePrice/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteServicePrice(int id)
         {

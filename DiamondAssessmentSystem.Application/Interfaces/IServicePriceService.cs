@@ -11,6 +11,8 @@ namespace DiamondAssessmentSystem.Application.Interfaces
     {
         Task<IEnumerable<ServicePriceDto>> GetServicePrices();
 
+        Task<IEnumerable<ServicePriceDto>> GetServicePrices(string status);
+
         Task<ServicePriceDto?> GetServicePrice(int id);
 
         Task<ServicePriceDto> PostServicePrice(ServicePriceCreateDto servicePriceCreateDto);

@@ -72,6 +72,10 @@ namespace DiamondAssessmentSystem.Application.Map
 
             CreateMap<Request, RequestDto>().ReverseMap();
             CreateMap<Request, RequestCreateDto>().ReverseMap();
+
+            CreateMap<ServicePrice, ServicePriceCreateDto>().ReverseMap();
+            CreateMap<ServicePrice, ServicePriceDto>().ReverseMap();
+
         }
     }
 }
