@@ -10,6 +10,7 @@ namespace DiamondAssessmentSystem.Application.Interfaces
     public interface IResultService
     {
         Task<IEnumerable<ResultDto>> GetResultsAsync();
+        Task<IEnumerable<ResultDto>> GetPersonalResults(string userId);
         Task<ResultDto> GetResultByIdAsync(int id);
         Task<ResultDto> CreateResultAsync(ResultCreateDto resultCreateDto);
         Task<bool> UpdateResultAsync(int id, ResultCreateDto resultCreateDto);

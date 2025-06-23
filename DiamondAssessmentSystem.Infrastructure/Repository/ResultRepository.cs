@@ -17,16 +17,31 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
 
         public async Task<IEnumerable<Result>> GetResultsAsync()
         {
-            return await _context.Results.Include(r => r.Request)   // Lấy thông tin Request, từ đó sẽ có thông tin nhân viên
-                                         .ThenInclude(r => r.Employee) // Thêm nhân viên từ mối quan hệ với Request
+            return await _context.Results.Include(r => r.Request) 
+                                         .ThenInclude(r => r.Employee) 
                                          .Include(r => r.Certificates)
                                          .ToListAsync();
         }
 
-        public async Task<Result> GetResultByIdAsync(int id)
+        public async Task<IEnumerable<Result>> GetPersonalResults(string userId)
         {
-            return await _context.Results.Include(r => r.Request)   // Lấy thông tin Request, từ đó sẽ có thông tin nhân viên
-                                         .ThenInclude(r => r.Employee) // Thêm nhân viên từ mối quan hệ với Request
+            var customerId = await GetCustomerId(userId);
+
+            if (customerId == -1)
+            {
+                return Enumerable.Empty<Result>();
+            }
+
+            return await _context.Results.Include(r => r.Request)
+                                         .ThenInclude(r => r.Employee)
+                                         .Include(r => r.Certificates)
+                                         .ToListAsync();
+        }
+
+        public async Task<Result?> GetResultByIdAsync(int id)
+        {
+            return await _context.Results.Include(r => r.Request)   
+                                         .ThenInclude(r => r.Employee) 
                                          .Include(r => r.Certificates)
                                          .FirstOrDefaultAsync(r => r.ResultId == id);
         }
@@ -57,22 +72,21 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             }
         }
 
-        public async Task<bool> DeleteResultAsync(int id)
-        {
-            var result = await _context.Results.FindAsync(id);
-            if (result == null)
-            {
-                return false;
-            }
-
-            _context.Results.Remove(result);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
         private async Task<bool> ResultExistsAsync(int id)
         {
             return await _context.Results.AnyAsync(e => e.ResultId == id);
+        }
+
+        private async Task<int> GetCustomerId(string userId)
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserId == userId);
+
+            if (customer == null)
+            {
+                return -1;
+            }
+
+            return customer.CustomerId;
         }
     }
 }

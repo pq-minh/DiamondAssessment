@@ -48,14 +48,18 @@ namespace DiamondAssessmentSystem.Controllers
 
             var createdEmployee = await _employeeService.PostEmployee(employeeDto);
 
-            return CreatedAtAction(nameof(GetEmployee), new { id = createdEmployee.EmployeeId }, createdEmployee);
+            if (createdEmployee == false)
+            {
+                return BadRequest("Error");
+            }
+            return Ok();
         }
 
         // PUT: api/Employee/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutEmployee(int id, EmployeeDto employeeDto)
         {
-            if (id != employeeDto.EmployeeId)
+            if (id == null)
             {
                 return BadRequest("Employee ID mismatch.");
             }
@@ -68,20 +72,6 @@ namespace DiamondAssessmentSystem.Controllers
             }
 
             return NoContent(); // Trả về NoContent khi cập nhật thành công
-        }
-
-        // DELETE: api/Employee/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEmployee(int id)
-        {
-            var deleted = await _employeeService.DeleteEmployee(id);
-
-            if (!deleted)
-            {
-                return NotFound(); // Trả về NotFound nếu không tìm thấy nhân viên
-            }
-
-            return NoContent(); // Trả về NoContent khi xóa thành công
         }
     }
 }

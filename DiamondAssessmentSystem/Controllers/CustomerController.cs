@@ -58,18 +58,5 @@ namespace DiamondAssessmentSystem.Controllers
 
             return NoContent();
         }
-
-        // DELETE: api/Customer/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCustomer(int id)
-        {
-            var deleted = await _customerService.DeleteCustomerAsync(id);
-            if (!deleted)
-            {
-                return NotFound();
-            }
-
-            return NoContent();
-        }
     }
 }

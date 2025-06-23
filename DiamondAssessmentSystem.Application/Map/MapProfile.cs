@@ -8,27 +8,6 @@ namespace DiamondAssessmentSystem.Application.Map
     {
         public MapProfile()
         {
-            //// Ánh xạ giữa Account và AccountDto
-            //CreateMap<Account, AccountDto>()
-            //    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccId))
-            //    .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role ?? 0)); // Handle nullable Role
-
-            //// Ánh xạ Customer với CustomerDto
-            //CreateMap<Customer, CustomerDto>()
-            //    .ForMember(dest => dest.Acc, opt => opt.MapFrom(src => src.Acc));
-
-            //// Ánh xạ Staff với StaffDto
-            //CreateMap<Employee, EmployeeDto>()
-            //    .ForMember(dest => dest.Acc, opt => opt.MapFrom(src => src.Acc));
-
-            //// Ánh xạ giữa Form và FormDto
-            //CreateMap<Request, RequestDto>()
-            //   .ForMember(dest => dest.BookingCommitments, opt => opt.MapFrom(src => src.BookingCommitments))
-            //   .ForMember(dest => dest.BookingReceipts, opt => opt.MapFrom(src => src.BookingReceipts))
-            //   .ForMember(dest => dest.BookingSealings, opt => opt.MapFrom(src => src.BookingSealings));
-
-            //// Ánh xạ giữa FormCreateDto và Form
-            //CreateMap<RequestCreateDto, Request>().ReverseMap();
 
             //// Ánh xạ giữa Order (trước đây là Booking) và OrderDto (trước đây là BookingDto)
             //CreateMap<Order, OrderDto>()
@@ -50,9 +29,6 @@ namespace DiamondAssessmentSystem.Application.Map
             //// Ánh xạ giữa CertificateCreateDto và Certificate
             //CreateMap<CertificateCreateDto, Certificate>();
 
-            //// Ánh xạ giữa Result và ResultDto
-            //CreateMap<Result, ResultDto>();
-
             //CreateMap<OrderDetail, OrderDetailDto>()
             //    .ForMember(dest => dest.ServicePrice, opt => opt.MapFrom(src => src.Service))
             //    .ForMember(dest => dest.Result, opt => opt.MapFrom(src => src.Result));
@@ -60,9 +36,6 @@ namespace DiamondAssessmentSystem.Application.Map
 
             //CreateMap<OrderDetailCreateDto, OrderDetail>();
 
-            //CreateMap<ServicePrice, ServicePriceDto>();
-
-            //CreateMap<ServicePrice, ServicePriceCreateDto>().ReverseMap();
             CreateMap<RegisterDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username));
 
@@ -75,6 +48,9 @@ namespace DiamondAssessmentSystem.Application.Map
 
             CreateMap<ServicePrice, ServicePriceCreateDto>().ReverseMap();
             CreateMap<ServicePrice, ServicePriceDto>().ReverseMap();
+
+            CreateMap<Result, ResultDto>().ReverseMap();
+            CreateMap<Result, ResultCreateDto>().ReverseMap();
 
         }
     }
