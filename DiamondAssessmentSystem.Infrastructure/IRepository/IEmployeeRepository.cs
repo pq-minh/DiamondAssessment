@@ -4,10 +4,7 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
 {
     public interface IEmployeeRepository
     {
-        Task<IEnumerable<Employee>> GetEmployeesAsync();
-        Task<Employee> GetEmployeeByIdAsync(int id);
-        Task<Employee> CreateEmployeeAsync(Employee employee);
+        Task<Employee?> GetEmployeeByIdAsync(string userId);
         Task<bool> UpdateEmployeeAsync(Employee employee);
-        Task<bool> DeleteEmployeeAsync(int id);
     }
 }

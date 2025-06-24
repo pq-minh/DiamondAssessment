@@ -31,17 +31,12 @@ namespace DiamondAssessmentSystem.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<String> RegisterCustomerAsync(RegisterDto registerDto)
+        public async Task<string> RegisterCustomerAsync(RegisterDto registerDto)
         {
-            var newUser = new User
-            {
-                UserName = registerDto.Username,
-                Email = registerDto.Email,
-                FirstName = registerDto.FirstName,
-                LastName = registerDto.LastName,
-                UserType = "Customer",
-                Status = "Active"
-            };
+            var newUser = _mapper.Map<User>(registerDto);
+
+            newUser.UserType = "Customer";
+            newUser.Status = "Active";
 
             var result = await _userRepository.RegisterCustomerAsync(newUser, registerDto.Password);
             if (!result.Succeeded)
@@ -49,8 +44,6 @@ namespace DiamondAssessmentSystem.Application.Services
                 var errors = string.Join("; ", result.Errors.Select(e => e.Description));
                 throw new Exception($"Unable to create account: {errors}");
             }
-
-            var roles = await _userRepository.GetUserRolesAsync(newUser);
 
             return "Registration successful";
         }

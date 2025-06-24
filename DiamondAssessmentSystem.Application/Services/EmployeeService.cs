@@ -21,36 +21,12 @@ namespace DiamondAssessmentSystem.Application.Services
             _mapper = mapper;
         }
 
-        // Lấy danh sách tất cả nhân viên
-        public async Task<IEnumerable<EmployeeDto>> GetEmployees()
+        public async Task<EmployeeDto?> GetEmployee(string userId)
         {
-            var employees = await _employeeRepository.GetEmployeesAsync();
-            return _mapper.Map<IEnumerable<EmployeeDto>>(employees); 
-        }
-
-        // Lấy thông tin một nhân viên theo id
-        public async Task<EmployeeDto?> GetEmployee(int id)
-        {
-            var employee = await _employeeRepository.GetEmployeeByIdAsync(id);
+            var employee = await _employeeRepository.GetEmployeeByIdAsync(userId);
             return employee == null ? null : _mapper.Map<EmployeeDto>(employee); 
         }
 
-        // Tạo mới nhân viên
-        public async Task<bool> PostEmployee(EmployeeDto employeeDto)
-        {
- 
-            var employee = _mapper.Map<Employee>(employeeDto);
-
-            var createdEmployee = await _employeeRepository.CreateEmployeeAsync(employee);
-
-            if (createdEmployee == null) {
-                return false;
-            }
-
-            return true;
-        }
-
-        // Cập nhật thông tin nhân viên
         public async Task<bool> PutEmployee(int id, EmployeeDto employeeDto)
         {
             if (id == null)
@@ -62,7 +38,7 @@ namespace DiamondAssessmentSystem.Application.Services
 
             var updated = await _employeeRepository.UpdateEmployeeAsync(employee);
 
-            return updated; // Trả về kết quả cập nhật
+            return updated; 
         }
 
     }

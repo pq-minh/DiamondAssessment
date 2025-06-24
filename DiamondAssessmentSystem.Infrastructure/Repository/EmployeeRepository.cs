@@ -15,27 +15,11 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             _context = context;
         }
 
-        // Lấy danh sách tất cả nhân viên
-        public async Task<IEnumerable<Employee>> GetEmployeesAsync()
+        public async Task<Employee?> GetEmployeeByIdAsync(string userId)
         {
-            return await _context.Employees.ToListAsync();
+            return await _context.Employees.Include(e => e.User).FirstOrDefaultAsync(e => e.UserId == userId);
         }
 
-        // Lấy thông tin một nhân viên theo id
-        public async Task<Employee> GetEmployeeByIdAsync(int id)
-        {
-            return await _context.Employees.FindAsync(id);
-        }
-
-        // Tạo một nhân viên mới
-        public async Task<Employee> CreateEmployeeAsync(Employee employee)
-        {
-            _context.Employees.Add(employee);
-            await _context.SaveChangesAsync();
-            return employee;
-        }
-
-        // Cập nhật thông tin nhân viên
         public async Task<bool> UpdateEmployeeAsync(Employee employee)
         {
             _context.Entry(employee).State = EntityState.Modified;
@@ -53,20 +37,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 }
                 throw;
             }
-        }
-
-        // Xóa một nhân viên
-        public async Task<bool> DeleteEmployeeAsync(int id)
-        {
-            var employee = await _context.Employees.FindAsync(id);
-            if (employee == null)
-            {
-                return false;
-            }
-
-            _context.Employees.Remove(employee);
-            await _context.SaveChangesAsync();
-            return true;
         }
 
         // Kiểm tra xem nhân viên có tồn tại hay không

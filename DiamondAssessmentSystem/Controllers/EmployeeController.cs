@@ -5,54 +5,36 @@ using DiamondAssessmentSystem.Application.DTO;
 namespace DiamondAssessmentSystem.Controllers
 {
     [Route("api/[controller]")]
+    //[Authorize(Roles = "Assement")]
     [ApiController]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
+        private readonly ICurrentUserService _currentUser;
 
-        public EmployeeController(IEmployeeService employeeService)
+        public EmployeeController(IEmployeeService employeeService, ICurrentUserService currentUser)
         {
             _employeeService = employeeService;
-        }
-
-        // GET: api/Employee
-        [HttpGet]
-        public async Task<IActionResult> GetEmployees()
-        {
-            var employees = await _employeeService.GetEmployees();
-            return Ok(employees);
+            _currentUser = currentUser;
         }
 
         // GET: api/Employee/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetEmployee(int id)
+        public async Task<IActionResult> GetEmployee()
         {
-            var employee = await _employeeService.GetEmployee(id);
+            var userId = _currentUser.UserId;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var employee = await _employeeService.GetEmployee(userId);
 
             if (employee == null)
             {
-                return NotFound(); // Trả về NotFound nếu không tìm thấy nhân viên
+                return NotFound(); 
             }
 
             return Ok(employee);
-        }
-
-        // POST: api/Employee
-        [HttpPost]
-        public async Task<IActionResult> PostEmployee(EmployeeDto employeeDto)
-        {
-            if (employeeDto == null)
-            {
-                return BadRequest("Employee data is null.");
-            }
-
-            var createdEmployee = await _employeeService.PostEmployee(employeeDto);
-
-            if (createdEmployee == false)
-            {
-                return BadRequest("Error");
-            }
-            return Ok();
         }
 
         // PUT: api/Employee/5
@@ -68,10 +50,10 @@ namespace DiamondAssessmentSystem.Controllers
 
             if (!updated)
             {
-                return NotFound(); // Trả về NotFound nếu không tìm thấy nhân viên
+                return NotFound(); 
             }
 
-            return NoContent(); // Trả về NoContent khi cập nhật thành công
+            return NoContent(); 
         }
     }
 }

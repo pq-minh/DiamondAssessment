@@ -20,17 +20,10 @@ namespace DiamondAssessmentSystem.Application.Services
             _mapper = mapper;
         }
 
-        // GET: api/Customer
-        public async Task<IEnumerable<CustomerDto>> GetCustomersAsync()
-        {
-            var customers = await _customerRepository.GetCustomersAsync();
-            return _mapper.Map<IEnumerable<CustomerDto>>(customers);
-        }
-
         // GET: api/Customer/5
-        public async Task<CustomerDto> GetCustomerByIdAsync(int id)
+        public async Task<CustomerDto> GetCustomerByIdAsync(string userId)
         {
-            var customer = await _customerRepository.GetCustomerByIdAsync(id);
+            var customer = await _customerRepository.GetCustomerByIdAsync(userId);
             if (customer == null)
             {
                 return null;
@@ -39,19 +32,10 @@ namespace DiamondAssessmentSystem.Application.Services
             return _mapper.Map<CustomerDto>(customer); 
         }
 
-        // POST: api/Customer
-        public async Task<CustomerDto> CreateCustomerAsync(CustomerCreateDto customerCreateDto)
-        {
-            var customer = _mapper.Map<Customer>(customerCreateDto); 
-
-            var createdCustomer = await _customerRepository.CreateCustomerAsync(customer);
-            return _mapper.Map<CustomerDto>(createdCustomer); 
-        }
-
         // PUT: api/Customer/5
-        public async Task<bool> UpdateCustomerAsync(int id, CustomerCreateDto customerCreateDto)
+        public async Task<bool> UpdateCustomerAsync(string userId, CustomerCreateDto customerCreateDto)
         {
-            var existingCustomer = await _customerRepository.GetCustomerByIdAsync(id);
+            var existingCustomer = await _customerRepository.GetCustomerByIdAsync(userId);
             if (existingCustomer == null)
             {
                 return false;  
