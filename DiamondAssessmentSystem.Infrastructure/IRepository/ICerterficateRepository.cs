@@ -7,9 +7,10 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
     public interface ICertificateRepository
     {
         Task<IEnumerable<Certificate>> GetCertificatesAsync();
-        Task<Certificate> GetCertificateByIdAsync(int id);
+        Task<IEnumerable<Certificate>> GetPersonalCertificates(string userId);
+        Task<Certificate?> GetCertificateByIdAsync(int id);
+        Task<Certificate?> GetPersonalCertificateById(string userId);
         Task<Certificate> CreateCertificateAsync(Certificate certificate);
-        Task<bool> UpdateCertificateAsync(Certificate certificate);
-        Task<bool> DeleteCertificateAsync(int id);
+        Task<bool> UpdateCertificateAsync(string userId, Certificate certificate);
     }
 }

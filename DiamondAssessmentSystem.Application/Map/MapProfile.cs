@@ -82,6 +82,12 @@ namespace DiamondAssessmentSystem.Application.Map
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
                 .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.User.PhoneNumber))
                 .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User.Gender));
+
+            CreateMap<Certificate, CertificateDto>().ReverseMap();
+            CreateMap<Certificate, CertificateCreateDto>().ReverseMap();
+
+            CreateMap<Blog, BlogDto>().ReverseMap();
+
         }
     }
 }

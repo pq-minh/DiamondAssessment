@@ -12,21 +12,35 @@ namespace DiamondAssessmentSystem.Controllers
     public class CertificateController : ControllerBase
     {
         private readonly ICerterficateService _certificateService;
+        private readonly ICurrentUserService _currentUser;
 
-        public CertificateController(ICerterficateService certificateService)
+        public CertificateController(ICerterficateService certificateService, ICurrentUserService currentUser)
         {
             _certificateService = certificateService;
+            _currentUser = currentUser;
         }
 
-        // GET: api/Certificate
-        [HttpGet]
+        //[Authorize(Roles = "Manager")]
+        [HttpGet("Management")]
         public async Task<ActionResult<IEnumerable<CertificateDto>>> GetCertificates()
         {
             var certificates = await _certificateService.GetCertificatesAsync();
             return Ok(certificates);
         }
 
-        // GET: api/Certificate/5
+        //[Authorize(Roles = "Customer")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<CertificateDto>>> GetPersonalCertificates()
+        {
+            var userId = _currentUser.UserId;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var certificates = await _certificateService.GetPersonalCertificates(userId);
+            return Ok(certificates);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<CertificateDto>> GetCertificate(int id)
         {
@@ -39,33 +53,25 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(certificate);
         }
 
-        // POST: api/Certificate
         [HttpPost]
         public async Task<ActionResult<CertificateDto>> PostCertificate(CertificateCreateDto certificateCreateDto)
         {
             var createdCertificate = await _certificateService.CreateCertificateAsync(certificateCreateDto);
-            return CreatedAtAction(nameof(GetCertificate), new { id = createdCertificate.CertId }, createdCertificate);
+            return CreatedAtAction(nameof(GetCertificate), new { id = createdCertificate.CertificateId}, createdCertificate);
         }
 
-        // PUT: api/Certificate/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCertificate(int id, CertificateCreateDto certificateCreateDto)
+        //[Authorize(Roles = "Manager")]
+        [HttpPut]
+        public async Task<IActionResult> PutCertificate(CertificateCreateDto certificateCreateDto)
         {
-            var updated = await _certificateService.UpdateCertificateAsync(id, certificateCreateDto);
+            var userId = _currentUser.UserId;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var updated = await _certificateService.UpdateCertificateAsync(userId, certificateCreateDto);
+
             if (!updated)
-            {
-                return NotFound();
-            }
-
-            return NoContent();
-        }
-
-        // DELETE: api/Certificate/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCertificate(int id)
-        {
-            var deleted = await _certificateService.DeleteCertificateAsync(id);
-            if (!deleted)
             {
                 return NotFound();
             }

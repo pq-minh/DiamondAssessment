@@ -12,12 +12,14 @@ namespace DiamondAssessmentSystem.Application.Services
     public class ResultService : IResultService
     {
         private readonly IResultRepository _resultRepository;
+        private readonly ICertificateRepository _certificateRepository;
         private readonly IMapper _mapper;
 
-        public ResultService(IResultRepository resultRepository, IMapper mapper)
+        public ResultService(IResultRepository resultRepository, IMapper mapper, ICertificateRepository certificateRepository)
         {
             _resultRepository = resultRepository;
             _mapper = mapper;
+            _certificateRepository = certificateRepository;
         }
 
         // Lấy danh sách kết quả
@@ -39,10 +41,10 @@ namespace DiamondAssessmentSystem.Application.Services
             var result = await _resultRepository.GetResultByIdAsync(id);
             if (result == null)
             {
-                return null;  // Nếu không tìm thấy, trả về null
+                return null; 
             }
 
-            return _mapper.Map<ResultDto>(result);  // Map từ entity sang DTO
+            return _mapper.Map<ResultDto>(result);  
         }
 
         // Tạo kết quả mới
@@ -65,6 +67,18 @@ namespace DiamondAssessmentSystem.Application.Services
             }
 
             _mapper.Map(resultCreateDto, existingResult);  
+
+            if (existingResult.Status == "Completed")
+            {
+                var cer = new Certificate
+                {
+                    IssueDate = DateTime.Now,
+                    ResultId = id,
+                    Status = "Pending"
+                };
+
+                await _certificateRepository.CreateCertificateAsync(cer);
+            }
 
             return await _resultRepository.UpdateResultAsync(existingResult); 
         }

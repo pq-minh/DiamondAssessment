@@ -13,10 +13,10 @@ namespace DiamondAssessmentSystem.Application.Interfaces
 
         Task<BlogDto> GetBlogById(int id);
 
-        Task<BlogDto> CreateBlog(BlogDto blogDto);
+        Task<BlogDto> CreateBlog(string userId, BlogDto blogDto);
 
-        Task<bool> UpdateBlog(int id, BlogDto blogDto);
+        Task<bool> UpdateBlog(string userId, BlogDto blogDto);
 
-        Task<bool> DeleteBlog(int id);
+        Task<bool> DeleteBlog(string userId, BlogDto blogDto);
     }
 }
