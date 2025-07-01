@@ -57,16 +57,12 @@ namespace DiamondAssessmentSystem.Application.Services
 
         // Update an existing blog
         public async Task<bool> UpdateBlog(string userId, BlogDto blogDto)
-        {   
-                return false;  // Return false if IDs do not match
-            }
-
-            // Map BlogDto to Blog entity for update
+        {
             var blog = _mapper.Map<Blog>(blogDto);
 
             var updated = await _blogRepository.UpdateBlogAsync(userId, blog);
 
-            return updated;  
+            return updated;
         }
 
         // Delete a blog

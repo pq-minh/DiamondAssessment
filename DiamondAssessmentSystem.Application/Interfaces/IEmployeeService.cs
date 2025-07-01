@@ -11,7 +11,6 @@ namespace DiamondAssessmentSystem.Application.Interfaces
     {
         Task<EmployeeDto?> GetEmployee(string id);
         Task<bool> PutEmployee(int id, EmployeeDto employeeDto);
-        Task<bool> DeleteEmployee(int id);
 
     }
 }

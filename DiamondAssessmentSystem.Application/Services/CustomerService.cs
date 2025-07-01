@@ -20,14 +20,6 @@ namespace DiamondAssessmentSystem.Application.Services
             _mapper = mapper;
         }
 
-        // GET: api/Customer
-        public async Task<IEnumerable<CustomerDto>> GetCustomersAsync()
-        {
-            var customers = await _customerRepository.GetCustomersAsync();
-            return _mapper.Map<IEnumerable<CustomerDto>>(customers); // Sử dụng AutoMapper để map từ entity sang DTO
-        }
-
-        // GET: api/Customer/5
         public async Task<CustomerDto> GetCustomerByIdAsync(string userId)
         {
             var customer = await _customerRepository.GetCustomerByIdAsync(userId);
@@ -39,7 +31,6 @@ namespace DiamondAssessmentSystem.Application.Services
             return _mapper.Map<CustomerDto>(customer); 
         }
 
-        // PUT: api/Customer/5
         public async Task<bool> UpdateCustomerAsync(string userId, CustomerCreateDto customerCreateDto)
         {
             var existingCustomer = await _customerRepository.GetCustomerByIdAsync(userId);

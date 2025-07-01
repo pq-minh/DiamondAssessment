@@ -18,14 +18,6 @@ namespace DiamondAssessmentSystem.Controllers
             _currentUser = currentUser;
         }
 
-        // GET: api/Employee
-        [HttpGet]
-        public async Task<IActionResult> GetEmployees()
-        {
-            var employees = await _employeeService.GetEmployees();
-            return Ok(employees);
-        }
-
         // GET: api/Employee/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEmployee()
@@ -39,7 +31,7 @@ namespace DiamondAssessmentSystem.Controllers
 
             if (employee == null)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
             return Ok(employee);
@@ -58,10 +50,10 @@ namespace DiamondAssessmentSystem.Controllers
 
             if (!updated)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
-            return NoContent(); 
+            return NoContent();
         }
     }
 }

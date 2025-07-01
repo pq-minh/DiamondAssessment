@@ -38,14 +38,6 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(customer);
         }
 
-        // POST: api/Customer
-        [HttpPost]
-        public async Task<ActionResult<CustomerDto>> PostCustomer(CustomerCreateDto customerCreateDto)
-        {
-            var createdCustomer = await _customerService.CreateCustomerAsync(customerCreateDto);
-            return CreatedAtAction(nameof(GetCustomer), new { id = createdCustomer.CustomerId }, createdCustomer);
-        }
-
         // PUT: api/Customer/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCustomer(CustomerCreateDto customerCreateDto)
