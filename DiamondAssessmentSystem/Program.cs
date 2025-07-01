@@ -33,7 +33,7 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<DiamondAssessmentDbContext>()
     .AddDefaultTokenProviders();
 
-// Optional cookie paths (not required for JWT, but for future admin UI maybe)
+// Optional cookie paths (good for future UI)
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
@@ -46,7 +46,6 @@ builder.Services.AddScoped<IServicePriceService, ServicePriceService>();
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ICerterficateService, CertificateService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
@@ -96,7 +95,7 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 
-    // 👇 VERY IMPORTANT: Allow reading JWT from query string for SignalR
+    // 👇 VERY IMPORTANT for SignalR with JWT
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -112,7 +111,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// ==================== Authorization ====================
 builder.Services.AddAuthorization();
 
 // ==================== CORS ====================
@@ -121,14 +119,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin", policy =>
     {
         policy
-            .SetIsOriginAllowed(origin =>
-            {
-                // Allow any localhost (HTTP/HTTPS) during development
-                if (origin != null && (origin.StartsWith("http://localhost") || origin.StartsWith("https://localhost")))
-                    return true;
-                return false;
-            })
-                          .AllowAnyHeader()
+            .WithOrigins("http://localhost:3000", "https://localhost:3000")
+            .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
     });
@@ -158,11 +150,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// OPTIONAL
-// Only redirect HTTPS if not localhost
+// Redirect HTTPS only in production
 if (!app.Environment.IsDevelopment())
 {
-app.UseHttpsRedirection();
+    app.UseHttpsRedirection();
 }
 
 app.UseStaticFiles();
