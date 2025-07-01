@@ -58,23 +58,16 @@ namespace DiamondAssessmentSystem.Application.Services
 
         public async Task<AccountDto> CreateEmployeeAsync(RegisterEmployeesDto dto, string role)
         {
-            // Map từ DTO sang Entity User
-            var newUser = new User
-            {
-                UserName = dto.Username,
-                Email = dto.Email,
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                PhoneNumber = dto.PhoneNumber,
-                UserType = "Employee",
-                Status = "Active"
-            };
+            var newUser = _mapper.Map<User>(dto);
+
+            newUser.UserType = "Employee";
+            newUser.Status = "Active";
 
             var result = await _userRepository.CreateEmployeeWithRoleAsync(newUser, dto.Password, role);
             if (!result.Succeeded)
             {
                 var errorMessages = string.Join("; ", result.Errors.Select(e => e.Description));
-                throw new System.Exception($"Unable to create staff account: {errorMessages}");
+                throw new Exception($"Unable to create staff account: {errorMessages}");
             }
 
             var roles = await _userRepository.GetUserRolesAsync(newUser);

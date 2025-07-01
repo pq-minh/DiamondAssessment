@@ -46,6 +46,7 @@ builder.Services.AddScoped<IServicePriceService, ServicePriceService>();
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ICerterficateService, CertificateService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
@@ -127,7 +128,7 @@ builder.Services.AddCors(options =>
                     return true;
                 return false;
             })
-            .AllowAnyHeader()
+                          .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
     });
@@ -161,7 +162,7 @@ if (app.Environment.IsDevelopment())
 // Only redirect HTTPS if not localhost
 if (!app.Environment.IsDevelopment())
 {
-    app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 }
 
 app.UseStaticFiles();

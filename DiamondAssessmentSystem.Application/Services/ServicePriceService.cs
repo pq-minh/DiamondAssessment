@@ -25,6 +25,13 @@ namespace DiamondAssessmentSystem.Application.Services
             return result;
         }
 
+        public async Task<IEnumerable<ServicePriceDto>> GetServicePrices(string status)
+        {
+            var servicePrices = await _servicePriceRepository.GetServicePrices(status);
+            var result = _mapper.Map<IEnumerable<ServicePriceDto>>(servicePrices);
+            return result;
+        }
+
         // GET: api/ServicePrices/{id}
         public async Task<ServicePriceDto?> GetServicePrice(int id)
         {
@@ -71,7 +78,16 @@ namespace DiamondAssessmentSystem.Application.Services
         // DELETE: api/ServicePrices/{id}
         public async Task<bool> DeleteServicePrice(int id)
         {
-            var deleted = await _servicePriceRepository.DeleteServicePriceAsync(id);
+            var existingServicePrice = await _servicePriceRepository.GetServicePriceByIdAsync(id);
+
+            if (existingServicePrice == null)
+            {
+                return false;
+            }
+
+            existingServicePrice.Status = "InActive";
+
+            var deleted = await _servicePriceRepository.UpdateServicePriceAsync(existingServicePrice);
             return deleted;
         }
     }

@@ -4,6 +4,7 @@ using DiamondAssessmentSystem.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiamondAssessmentSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(DiamondAssessmentDbContext))]
-    partial class DiamondAssessmentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250623103102_AddApprovalFieldsToCertificate")]
+    partial class AddApprovalFieldsToCertificate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -123,57 +126,45 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                 {
                     b.Property<int>("ChatId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("chat_id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChatId"));
 
-                    b.Property<int>("ConversationId")
-                        .HasColumnType("int");
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int")
+                        .HasColumnName("customer_id");
 
-                    b.Property<string>("FileName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FilePath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("FileSize")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
+                    b.Property<int?>("EmployeeId")
+                        .HasColumnType("int")
+                        .HasColumnName("employee_id");
 
                     b.Property<string>("Message")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("message");
 
                     b.Property<string>("MessageType")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("message_type");
 
                     b.Property<int?>("RequestId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("request_id");
 
-                    b.Property<string>("SavedFileName")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime")
+                        .HasColumnName("timestamp");
 
-                    b.Property<int>("SenderId")
-                        .HasColumnType("int");
+                    b.HasKey("ChatId")
+                        .HasName("PK__ChatLogs__FD040B175AFF3BC5");
 
-                    b.Property<string>("SenderName")
-                        .HasColumnType("nvarchar(max)");
+                    b.HasIndex("CustomerId");
 
-                    b.Property<string>("SenderRole")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("SentAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.HasKey("ChatId");
-
-                    b.HasIndex("ConversationId");
+                    b.HasIndex("EmployeeId");
 
                     b.HasIndex("RequestId");
 
@@ -225,41 +216,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                     b.HasIndex("RequestId");
 
                     b.ToTable("Commitment_records", (string)null);
-                });
-
-            modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Conversation", b =>
-                {
-                    b.Property<int>("ConversationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ConversationId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("open");
-
-                    b.HasKey("ConversationId");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.ToTable("Conversations");
                 });
 
             modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Customer", b =>
@@ -979,17 +935,26 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
 
             modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.ChatLog", b =>
                 {
-                    b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.Conversation", "Conversation")
+                    b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.Customer", "Customer")
                         .WithMany("ChatLogs")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CustomerId")
+                        .HasConstraintName("FK__ChatLogs__custom__72C60C4A");
 
-                    b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.Request", null)
+                    b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.Employee", "Employee")
                         .WithMany("ChatLogs")
-                        .HasForeignKey("RequestId");
+                        .HasForeignKey("EmployeeId")
+                        .HasConstraintName("FK__ChatLogs__employ__73BA3083");
 
-                    b.Navigation("Conversation");
+                    b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.Request", "Request")
+                        .WithMany("ChatLogs")
+                        .HasForeignKey("RequestId")
+                        .HasConstraintName("FK__ChatLogs__reques__71D1E811");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Request");
                 });
 
             modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.CommitmentRecord", b =>
@@ -1008,24 +973,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                     b.Navigation("ApprovedByNavigation");
 
                     b.Navigation("Request");
-                });
-
-            modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Conversation", b =>
-                {
-                    b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.Customer", "Customer")
-                        .WithMany("Conversations")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.Employee", "Employee")
-                        .WithMany("Conversations")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Customer", b =>
@@ -1216,14 +1163,9 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Conversation", b =>
-                {
-                    b.Navigation("ChatLogs");
-                });
-
             modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Customer", b =>
                 {
-                    b.Navigation("Conversations");
+                    b.Navigation("ChatLogs");
 
                     b.Navigation("Orders");
 
@@ -1234,9 +1176,9 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                 {
                     b.Navigation("Blogs");
 
-                    b.Navigation("CommitmentRecords");
+                    b.Navigation("ChatLogs");
 
-                    b.Navigation("Conversations");
+                    b.Navigation("CommitmentRecords");
 
                     b.Navigation("Requests");
 

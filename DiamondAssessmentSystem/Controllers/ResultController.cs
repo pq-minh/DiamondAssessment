@@ -11,17 +11,33 @@ namespace DiamondAssessmentSystem.Controllers
     public class ResultController : ControllerBase
     {
         private readonly IResultService _resultService;
+        private readonly ICurrentUserService _currentUser;
 
-        public ResultController(IResultService resultService)
+        public ResultController(IResultService resultService, ICurrentUserService currentUser)
         {
             _resultService = resultService;
+            _currentUser = currentUser;
         }
 
         // GET: api/Result
+        //[Authorize(Roles = "Consultant")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ResultDto>>> GetResults()
         {
             var results = await _resultService.GetResultsAsync();
+            return Ok(results);
+        }
+
+        [HttpGet("cust")]
+        public async Task<ActionResult<IEnumerable<ResultDto>>> GetPersonalResults()
+        {
+
+            var userId = _currentUser.UserId;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var results = await _resultService.GetPersonalResults(userId);
             return Ok(results);
         }
 

@@ -22,11 +22,38 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                                  .ToListAsync();
         }
 
-        public async Task<Certificate> GetCertificateByIdAsync(int id)
+        public async Task<IEnumerable<Certificate>> GetPersonalCertificates(string userId)
+        {
+            var customerId = await GetCustomerId(userId);
+
+            if (customerId == -1)
+            {
+                return Enumerable.Empty<Certificate>();
+            }
+
+            return await _context.Certificates.Include(c => c.Result).ThenInclude(r => r.Request)
+                .Where(c => c.Result.Request.CustomerId == customerId).ToListAsync();
+        }
+
+        public async Task<Certificate?> GetCertificateByIdAsync(int id)
         {
             return await _context.Certificates
                                  .Include(c => c.Result)
                                  .FirstOrDefaultAsync(c => c.CertificateId == id);
+        }
+
+        public async Task<Certificate?> GetPersonalCertificateById(string userId)
+        {
+            var customerId = await GetCustomerId(userId);
+
+            if (customerId == -1)
+            {
+                return null;
+            }
+
+            return await _context.Certificates
+                                 .Include(c => c.Result)
+                                 .FirstOrDefaultAsync(c => c.CertificateId == customerId);
         }
 
         public async Task<Certificate> CreateCertificateAsync(Certificate certificate)
@@ -36,10 +63,12 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return certificate;
         }
 
-        public async Task<bool> UpdateCertificateAsync(Certificate certificate)
+        public async Task<bool> UpdateCertificateAsync(string userId, Certificate certificate)
         {
-            _context.Entry(certificate).State = EntityState.Modified;
+            var employeeId = await GetEmployeeId(userId);
 
+            _context.Entry(certificate).State = EntityState.Modified;
+            certificate.ApprovedBy = employeeId;
             try
             {
                 await _context.SaveChangesAsync();
@@ -47,7 +76,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!await CertificateExistsAsync(certificate.CertificateId)) // Thay CertId thành CertificateId
+                if (!await CertificateExistsAsync(certificate.CertificateId))
                 {
                     return false;
                 }
@@ -55,22 +84,33 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             }
         }
 
-        public async Task<bool> DeleteCertificateAsync(int id)
-        {
-            var certificate = await _context.Certificates.FindAsync(id);
-            if (certificate == null)
-            {
-                return false;
-            }
-
-            _context.Certificates.Remove(certificate);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
         private async Task<bool> CertificateExistsAsync(int id)
         {
-            return await _context.Certificates.AnyAsync(e => e.CertificateId == id); // Sửa thành CertificateId
+            return await _context.Certificates.AnyAsync(e => e.CertificateId == id);
+        }
+
+        private async Task<int> GetCustomerId(string userId)
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserId == userId);
+
+            if (customer == null)
+            {
+                return -1;
+            }
+
+            return customer.CustomerId;
+        }
+
+        private async Task<int> GetEmployeeId(string userId)
+        {
+            var employee = await _context.Employees.FirstOrDefaultAsync(x => x.UserId == userId);
+
+            if (employee == null)
+            {
+                return -1;
+            }
+
+            return employee.EmployeeId;
         }
     }
 }

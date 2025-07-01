@@ -1,5 +1,6 @@
 ﻿using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,33 +16,14 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<Customer>> GetCustomersAsync()
+        public async Task<Customer?> GetCustomerByIdAsync(string userId)
         {
-            return await _context.Customers
-                                 //.Include(c => c.ChatLogs)      
-                                 .Include(c => c.Orders)        
-                                 .Include(c => c.Requests)      
-                                 .ToListAsync();
-        }
-
-        public async Task<Customer?> GetCustomerByIdAsync(int id)
-        {
-            return await _context.Customers
-                                 //.Include(c => c.ChatLogs)      
-                                 .Include(c => c.Orders)        
-                                 .Include(c => c.Requests)      
-                                 .FirstOrDefaultAsync(c => c.CustomerId == id);
-        }
-
-        public async Task<Customer> CreateCustomerAsync(Customer customer)
-        {
-            _context.Customers.Add(customer);
-            await _context.SaveChangesAsync();
-            return customer;
+            return await _context.Customers.Include(c => c.User).FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
         public async Task<bool> UpdateCustomerAsync(Customer customer)
         {
+            _context.Entry(customer.User).State = EntityState.Modified;
             _context.Entry(customer).State = EntityState.Modified;
 
             try
@@ -59,22 +41,10 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             }
         }
 
-        public async Task<bool> DeleteCustomerAsync(int id)
-        {
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer == null)
-            {
-                return false;
-            }
-
-            _context.Customers.Remove(customer);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
         private async Task<bool> CustomerExistsAsync(int id)
         {
             return await _context.Customers.AnyAsync(e => e.CustomerId == id);
         }
+
     }
 }

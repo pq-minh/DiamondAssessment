@@ -28,45 +28,29 @@ namespace DiamondAssessmentSystem.Application.Services
         }
 
         // GET: api/Customer/5
-        public async Task<CustomerDto> GetCustomerByIdAsync(int id)
+        public async Task<CustomerDto> GetCustomerByIdAsync(string userId)
         {
-            var customer = await _customerRepository.GetCustomerByIdAsync(id);
+            var customer = await _customerRepository.GetCustomerByIdAsync(userId);
             if (customer == null)
             {
-                return null;  // Nếu không tìm thấy customer, trả về null
+                return null;
             }
 
-            return _mapper.Map<CustomerDto>(customer); // Sử dụng AutoMapper để map từ entity sang DTO
-        }
-
-        // POST: api/Customer
-        public async Task<CustomerDto> CreateCustomerAsync(CustomerCreateDto customerCreateDto)
-        {
-            var customer = _mapper.Map<Customer>(customerCreateDto);  // Map từ CustomerCreateDto sang entity Customer
-
-            var createdCustomer = await _customerRepository.CreateCustomerAsync(customer);
-            return _mapper.Map<CustomerDto>(createdCustomer); // Map từ entity sang DTO
+            return _mapper.Map<CustomerDto>(customer); 
         }
 
         // PUT: api/Customer/5
-        public async Task<bool> UpdateCustomerAsync(int id, CustomerCreateDto customerCreateDto)
+        public async Task<bool> UpdateCustomerAsync(string userId, CustomerCreateDto customerCreateDto)
         {
-            var existingCustomer = await _customerRepository.GetCustomerByIdAsync(id);
+            var existingCustomer = await _customerRepository.GetCustomerByIdAsync(userId);
             if (existingCustomer == null)
             {
-                return false;  // Nếu không tìm thấy customer, trả về false
+                return false;  
             }
 
-            // Cập nhật thông tin cho customer hiện tại
-            _mapper.Map(customerCreateDto, existingCustomer);  // Map từ DTO vào entity hiện tại
+            _mapper.Map(customerCreateDto, existingCustomer);  
 
-            return await _customerRepository.UpdateCustomerAsync(existingCustomer); // Cập nhật customer trong DB
-        }
-
-        // DELETE: api/Customer/5
-        public async Task<bool> DeleteCustomerAsync(int id)
-        {
-            return await _customerRepository.DeleteCustomerAsync(id); // Xóa customer trong DB
+            return await _customerRepository.UpdateCustomerAsync(existingCustomer); 
         }
     }
 }

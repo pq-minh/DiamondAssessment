@@ -24,49 +24,52 @@ namespace DiamondAssessmentSystem.Application.Services
         public async Task<IEnumerable<CertificateDto>> GetCertificatesAsync()
         {
             var certificates = await _certificateRepository.GetCertificatesAsync();
-            return _mapper.Map<IEnumerable<CertificateDto>>(certificates); // Sử dụng AutoMapper để map từ entity sang DTO
+            return _mapper.Map<IEnumerable<CertificateDto>>(certificates); 
         }
 
-        // GET: api/Certificate/5
+        public async Task<IEnumerable<CertificateDto>> GetPersonalCertificates(string userId)
+        {
+            var certificates = await _certificateRepository.GetPersonalCertificates(userId);
+            return _mapper.Map<IEnumerable<CertificateDto>>(certificates);
+        }
+
         public async Task<CertificateDto> GetCertificateByIdAsync(int id)
         {
             var certificate = await _certificateRepository.GetCertificateByIdAsync(id);
             if (certificate == null)
             {
-                return null;  // Nếu không tìm thấy certificate, trả về null
+                return null; 
             }
 
-            return _mapper.Map<CertificateDto>(certificate); // Sử dụng AutoMapper để map từ entity sang DTO
+            return _mapper.Map<CertificateDto>(certificate);
         }
 
         // POST: api/Certificate
         public async Task<CertificateDto> CreateCertificateAsync(CertificateCreateDto certificateCreateDto)
         {
-            var certificate = _mapper.Map<Certificate>(certificateCreateDto);  // Map từ CertificateCreateDto sang entity Certificate
+            var certificate = _mapper.Map<Certificate>(certificateCreateDto); 
 
             var createdCertificate = await _certificateRepository.CreateCertificateAsync(certificate);
-            return _mapper.Map<CertificateDto>(createdCertificate); // Map từ entity sang DTO
+            return _mapper.Map<CertificateDto>(createdCertificate); 
         }
 
-        // PUT: api/Certificate/5
-        public async Task<bool> UpdateCertificateAsync(int id, CertificateCreateDto certificateCreateDto)
+        public async Task<bool> UpdateCertificateAsync(string userId, CertificateCreateDto certificateCreateDto)
         {
-            var existingCertificate = await _certificateRepository.GetCertificateByIdAsync(id);
+            var existingCertificate = await _certificateRepository.GetCertificateByIdAsync(certificateCreateDto.CertificateId);
+
             if (existingCertificate == null)
             {
-                return false;  // Nếu không tìm thấy certificate, trả về false
+                return false;
             }
 
-            // Cập nhật thông tin cho certificate hiện tại
-            _mapper.Map(certificateCreateDto, existingCertificate);  // Map từ DTO vào entity hiện tại
+            _mapper.Map(certificateCreateDto, existingCertificate);
 
-            return await _certificateRepository.UpdateCertificateAsync(existingCertificate); // Cập nhật certificate trong DB
-        }
+            if (certificateCreateDto.Status == "Accepted")
+            {
+                existingCertificate.ApprovedDate = DateTime.UtcNow;
+            }
 
-        // DELETE: api/Certificate/5
-        public async Task<bool> DeleteCertificateAsync(int id)
-        {
-            return await _certificateRepository.DeleteCertificateAsync(id); // Xóa certificate trong DB
+            return await _certificateRepository.UpdateCertificateAsync(userId, existingCertificate); 
         }
     }
 }

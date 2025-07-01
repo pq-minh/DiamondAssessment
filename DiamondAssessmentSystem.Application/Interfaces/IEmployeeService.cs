@@ -9,9 +9,7 @@ namespace DiamondAssessmentSystem.Application.Interfaces
 {
     public interface IEmployeeService
     {
-        Task<IEnumerable<EmployeeDto>> GetEmployees();
-        Task<EmployeeDto?> GetEmployee(int id);
-        Task<EmployeeDto> PostEmployee(EmployeeDto employeeDto);
+        Task<EmployeeDto?> GetEmployee(string id);
         Task<bool> PutEmployee(int id, EmployeeDto employeeDto);
         Task<bool> DeleteEmployee(int id);
 

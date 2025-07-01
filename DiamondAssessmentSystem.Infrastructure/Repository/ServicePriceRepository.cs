@@ -20,6 +20,11 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return await _context.ServicePrices.ToListAsync();
         }
 
+        public async Task<IEnumerable<ServicePrice>> GetServicePrices(string status)
+        {
+            return await _context.ServicePrices.Where(s => s.Status == status).ToListAsync();
+        }
+
         public async Task<ServicePrice?> GetServicePriceByIdAsync(int id)
         {
             return await _context.ServicePrices.FindAsync(id);
@@ -49,19 +54,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 }
                 throw;
             }
-        }
-
-        public async Task<bool> DeleteServicePriceAsync(int id)
-        {
-            var servicePrice = await _context.ServicePrices.FindAsync(id);
-            if (servicePrice == null)
-            {
-                return false;
-            }
-
-            _context.ServicePrices.Remove(servicePrice);
-            await _context.SaveChangesAsync();
-            return true;
         }
 
         private async Task<bool> ServicePriceExistsAsync(int id)

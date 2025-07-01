@@ -4,13 +4,35 @@ namespace DiamondAssessmentSystem.Application.DTO
 {
     public class CertificateDto
     {
-        public int CertId { get; set; }
-        public DateOnly? IssueDate { get; set; }
-        public List<ResultDto> Results { get; set; } = new List<ResultDto>();
+        public int CertificateId { get; set; }
+
+        public int ResultId { get; set; }
+
+        public string? CertificateNumber { get; set; }
+
+        public DateTime? IssueDate { get; set; }
+
+        public int? ApprovedBy { get; set; }
+
+        public DateTime? ApprovedDate { get; set; }
+
+        public string? Status { get; set; }
     }
 
     public class CertificateCreateDto
     {
-        public DateOnly? IssueDate { get; set; }
+        public int CertificateId { get; set; }
+
+        public int ResultId { get; set; }
+
+        public string? CertificateNumber { get; set; }
+
+        public DateTime? IssueDate { get; set; }
+
+        public int? ApprovedBy { get; set; }
+
+        public DateTime? ApprovedDate { get; set; }
+
+        public string? Status { get; set; }
     }
 }

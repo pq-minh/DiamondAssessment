@@ -11,13 +11,14 @@ namespace DiamondAssessmentSystem.Controllers
     public class BlogController : ControllerBase
     {
         private readonly IBlogService _blogService;
+        private readonly ICurrentUserService _currentUser;
 
-        public BlogController(IBlogService blogService)
+        public BlogController(IBlogService blogService, ICurrentUserService currentUser)
         {
             _blogService = blogService;
+            _currentUser = currentUser;
         }
 
-        // GET: api/Blog
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BlogDto>>> GetBlogs()
         {
@@ -25,7 +26,6 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(blogs);
         }
 
-        // GET: api/Blog/5
         [HttpGet("{id}")]
         public async Task<ActionResult<BlogDto>> GetBlog(int id)
         {
@@ -39,15 +39,20 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(blog);
         }
 
-        // POST: api/Blog
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<BlogDto>> CreateBlog(BlogDto blogDto)
         {
-            var createdBlog = await _blogService.CreateBlog(blogDto);
+            var userId = _currentUser.UserId;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var createdBlog = await _blogService.CreateBlog(userId, blogDto);
             return CreatedAtAction(nameof(GetBlog), new { id = createdBlog.BlogId }, createdBlog);
         }
 
-        // PUT: api/Blog/5
+        //[Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBlog(int id, BlogDto blogDto)
         {
@@ -56,7 +61,12 @@ namespace DiamondAssessmentSystem.Controllers
                 return BadRequest();
             }
 
-            var updated = await _blogService.UpdateBlog(id, blogDto);
+            var userId = _currentUser.UserId;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var updated = await _blogService.UpdateBlog(userId, blogDto);
 
             if (!updated)
             {
@@ -66,11 +76,20 @@ namespace DiamondAssessmentSystem.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Blog/5
+        //[Authorize(Roles = "Consultant")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBlog(int id)
         {
-            var deleted = await _blogService.DeleteBlog(id);
+            var blog = new BlogDto { 
+                BlogId = id
+            };
+
+            var userId = _currentUser.UserId;
+
+            if (userId == null)
+                return Unauthorized();
+
+            var deleted = await _blogService.DeleteBlog(userId, blog);
 
             if (!deleted)
             {

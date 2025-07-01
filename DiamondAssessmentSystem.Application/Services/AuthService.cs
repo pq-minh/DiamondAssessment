@@ -5,9 +5,13 @@ using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Application.Services
 {
@@ -27,17 +31,12 @@ namespace DiamondAssessmentSystem.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<String> RegisterCustomerAsync(RegisterDto registerDto)
+        public async Task<string> RegisterCustomerAsync(RegisterDto registerDto)
         {
-            var newUser = new User
-            {
-                UserName = registerDto.Username,
-                Email = registerDto.Email,
-                FirstName = registerDto.FirstName,
-                LastName = registerDto.LastName,
-                UserType = "Customer",
-                Status = "Active"
-            };
+            var newUser = _mapper.Map<User>(registerDto);
+
+            newUser.UserType = "Customer";
+            newUser.Status = "Active";
 
             var result = await _userRepository.RegisterCustomerAsync(newUser, registerDto.Password);
             if (!result.Succeeded)
@@ -95,8 +94,7 @@ namespace DiamondAssessmentSystem.Application.Services
                 audience: _configuration["Jwt:Issuer"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds
-            );
+                signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

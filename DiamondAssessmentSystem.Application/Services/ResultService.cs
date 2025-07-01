@@ -12,19 +12,27 @@ namespace DiamondAssessmentSystem.Application.Services
     public class ResultService : IResultService
     {
         private readonly IResultRepository _resultRepository;
+        private readonly ICertificateRepository _certificateRepository;
         private readonly IMapper _mapper;
 
-        public ResultService(IResultRepository resultRepository, IMapper mapper)
+        public ResultService(IResultRepository resultRepository, IMapper mapper, ICertificateRepository certificateRepository)
         {
             _resultRepository = resultRepository;
             _mapper = mapper;
+            _certificateRepository = certificateRepository;
         }
 
         // Lấy danh sách kết quả
         public async Task<IEnumerable<ResultDto>> GetResultsAsync()
         {
             var results = await _resultRepository.GetResultsAsync();
-            return _mapper.Map<IEnumerable<ResultDto>>(results);  // Map từ entity sang DTO
+            return _mapper.Map<IEnumerable<ResultDto>>(results);  
+        }
+
+        public async Task<IEnumerable<ResultDto>> GetPersonalResults(string userId)
+        {
+            var results = await _resultRepository.GetPersonalResults(userId);
+            return _mapper.Map<IEnumerable<ResultDto>>(results); 
         }
 
         // Lấy kết quả theo ID
@@ -33,39 +41,60 @@ namespace DiamondAssessmentSystem.Application.Services
             var result = await _resultRepository.GetResultByIdAsync(id);
             if (result == null)
             {
-                return null;  // Nếu không tìm thấy, trả về null
+                return null; 
             }
 
-            return _mapper.Map<ResultDto>(result);  // Map từ entity sang DTO
+            return _mapper.Map<ResultDto>(result);  
         }
 
         // Tạo kết quả mới
         public async Task<ResultDto> CreateResultAsync(ResultCreateDto resultCreateDto)
         {
-            var result = _mapper.Map<Result>(resultCreateDto);  // Map từ ResultCreateDto sang entity
+            var result = _mapper.Map<Result>(resultCreateDto);  
 
             var createdResult = await _resultRepository.CreateResultAsync(result);
-            return _mapper.Map<ResultDto>(createdResult);  // Map từ entity sang DTO
+            return _mapper.Map<ResultDto>(createdResult);
         }
 
         // Cập nhật kết quả
         public async Task<bool> UpdateResultAsync(int id, ResultCreateDto resultCreateDto)
         {
             var existingResult = await _resultRepository.GetResultByIdAsync(id);
+
             if (existingResult == null)
             {
-                return false;  // Không tìm thấy kết quả cần cập nhật
+                return false; 
             }
 
-            _mapper.Map(resultCreateDto, existingResult);  // Map từ DTO vào entity hiện tại
+            _mapper.Map(resultCreateDto, existingResult);  
 
-            return await _resultRepository.UpdateResultAsync(existingResult);  // Cập nhật kết quả trong DB
+            if (existingResult.Status == "Completed")
+            {
+                var cer = new Certificate
+                {
+                    IssueDate = DateTime.Now,
+                    ResultId = id,
+                    Status = "Pending"
+                };
+
+                await _certificateRepository.CreateCertificateAsync(cer);
+            }
+
+            return await _resultRepository.UpdateResultAsync(existingResult); 
         }
 
         // Xóa kết quả
         public async Task<bool> DeleteResultAsync(int id)
         {
-            return await _resultRepository.DeleteResultAsync(id);  // Xóa kết quả theo ID
+            var existingResult = await _resultRepository.GetResultByIdAsync(id);
+
+            if (existingResult == null)
+            {
+                return false;
+            }
+
+            existingResult.Status = "InActive";
+            return await _resultRepository.UpdateResultAsync(existingResult);
         }
     }
 }
