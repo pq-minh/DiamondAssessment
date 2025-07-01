@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DiamondAssessmentSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddConversationAndChatLogTables : Migration
+    public partial class AddIdentityToConversationAndChatLog : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -118,6 +118,12 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                 nullable: false,
                 defaultValue: false);
 
+            migrationBuilder.AddColumn<string>(
+                name: "SavedFileName",
+                table: "ChatLogs",
+                type: "nvarchar(max)",
+                nullable: true);
+
             migrationBuilder.AddColumn<int>(
                 name: "SenderId",
                 table: "ChatLogs",
@@ -126,12 +132,17 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                 defaultValue: 0);
 
             migrationBuilder.AddColumn<string>(
+                name: "SenderName",
+                table: "ChatLogs",
+                type: "nvarchar(max)",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
                 name: "SenderRole",
                 table: "ChatLogs",
                 type: "nvarchar(20)",
                 maxLength: 20,
-                nullable: false,
-                defaultValue: "");
+                nullable: true);
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "SentAt",
@@ -242,7 +253,15 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                 table: "ChatLogs");
 
             migrationBuilder.DropColumn(
+                name: "SavedFileName",
+                table: "ChatLogs");
+
+            migrationBuilder.DropColumn(
                 name: "SenderId",
+                table: "ChatLogs");
+
+            migrationBuilder.DropColumn(
+                name: "SenderName",
                 table: "ChatLogs");
 
             migrationBuilder.DropColumn(

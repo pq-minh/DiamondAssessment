@@ -50,5 +50,13 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             _context.Conversations.Update(conversation);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<Conversation>> GetConversationsByEmployeeIdAsync(int employeeId)
+        {
+            return await _context.Conversations
+                .Where(c => c.EmployeeId == employeeId)
+                .Include(c => c.Customer)
+                .ToListAsync();
+        }
     }
 }

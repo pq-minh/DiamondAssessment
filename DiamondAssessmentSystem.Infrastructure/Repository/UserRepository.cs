@@ -167,5 +167,26 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, password);
             return isPasswordValid ? user : null;
         }
+
+        public async Task<int?> GetAssociatedIdByUserIdAsync(string userId)
+        {
+            var customerId = await _context.Customers
+                .Where(c => c.UserId == userId)
+                .Select(c => (int?)c.CustomerId)
+                .FirstOrDefaultAsync();
+
+            if (customerId.HasValue)
+                return customerId.Value;
+
+            var employeeId = await _context.Employees
+                .Where(e => e.UserId == userId)
+                .Select(e => (int?)e.EmployeeId)
+                .FirstOrDefaultAsync();
+
+            if (employeeId.HasValue)
+                return employeeId.Value;
+
+            return null;
+        }
     }
 }

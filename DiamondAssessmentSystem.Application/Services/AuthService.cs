@@ -5,13 +5,9 @@ using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Application.Services
 {
@@ -66,13 +62,13 @@ namespace DiamondAssessmentSystem.Application.Services
 
             return new LoginResponseDto
             {
-                Token = token,
+                Token = await token,
                 Username = user.UserName,
                 Roles = roles.ToList()
             };
         }
 
-        private string GenerateJwtToken(User user, IList<string> roles)
+        private async Task<string> GenerateJwtToken(User user, IList<string> roles)
         {
             var claims = new List<Claim>
             {
@@ -83,6 +79,14 @@ namespace DiamondAssessmentSystem.Application.Services
 
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
+            var associatedId = await _userRepository.GetAssociatedIdByUserIdAsync(user.Id);
+            if (!associatedId.HasValue)
+            {
+                throw new UnauthorizedAccessException("Your account is not assigned Customer or Employee. Please contact administrator.");
+            }
+
+            claims.Add(new Claim("AssociatedId", associatedId.Value.ToString()));
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -91,7 +95,8 @@ namespace DiamondAssessmentSystem.Application.Services
                 audience: _configuration["Jwt:Issuer"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds);
+                signingCredentials: creds
+            );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

@@ -3,6 +3,7 @@ using DiamondAssessmentSystem.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,11 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             _context = context;
         }
 
+        public async Task<ChatLog?> GetByIdAsync(int chatId)
+        {
+            return await _context.ChatLogs.FirstOrDefaultAsync(c => c.ChatId == chatId);
+        }
+
         public async Task<List<ChatLog>> GetByConversationIdAsync(int conversationId)
         {
             return await _context.ChatLogs
@@ -26,10 +32,12 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 .ToListAsync();
         }
 
-        public async Task AddAsync(ChatLog chatLog)
+        public async Task<ChatLog?> AddAsync(ChatLog chatLog)
         {
-            _context.ChatLogs.Add(chatLog);
-            await _context.SaveChangesAsync();
+            var chatEntry = _context.ChatLogs.Add(chatLog);
+            int result = await _context.SaveChangesAsync();
+
+            return result > 0 ? chatEntry.Entity : null;
         }
     }
 }

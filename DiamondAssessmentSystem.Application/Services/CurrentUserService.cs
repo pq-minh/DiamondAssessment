@@ -26,5 +26,14 @@ namespace DiamondAssessmentSystem.Application.Services
 
         public string? Role =>
             _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Role)?.Value;
+
+        public int? AssociatedId
+        {
+            get
+            {
+                var value = _httpContextAccessor.HttpContext?.User?.FindFirst("AssociatedId")?.Value;
+                return int.TryParse(value, out var id) ? id : (int?)null;
+            }
+        }
     }
 }

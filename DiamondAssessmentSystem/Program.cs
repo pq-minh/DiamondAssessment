@@ -1,6 +1,7 @@
 ﻿using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Application.Map;
 using DiamondAssessmentSystem.Application.Services;
+using DiamondAssessmentSystem.Hubs;
 using DiamondAssessmentSystem.Infrastructure.Auth;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
@@ -11,33 +12,50 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ==================== AutoMapper ====================
 builder.Services.AddAutoMapper(typeof(MapProfile));
+
+// ==================== Controllers ====================
 builder.Services.AddControllers();
+
+// ==================== DbContext ====================
 builder.Services.AddDbContext<DiamondAssessmentDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Service
+// ==================== HttpContextAccessor ====================
+builder.Services.AddHttpContextAccessor();
+
+// ==================== Identity ====================
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<DiamondAssessmentDbContext>()
+    .AddDefaultTokenProviders();
+
+// Optional cookie paths (not required for JWT, but for future admin UI maybe)
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+});
+
+// ==================== Application Services ====================
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IServicePriceService, ServicePriceService>();
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ICerterficateService, CertificateService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
-builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
 
-// Repo
+// ==================== Repositories ====================
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBlogRepository, BlogRepository>();
 builder.Services.AddScoped<ICertificateRepository, CertificateRepository>();
@@ -51,23 +69,10 @@ builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IChatLogRepository, ChatLogRepository>();
 
-// Cấu hình http
-builder.Services.AddHttpContextAccessor();
+// ==================== SignalR ====================
+builder.Services.AddSignalR();
 
-// Cấu hình Identity
-builder.Services.AddIdentity<User, IdentityRole>()
-    .AddEntityFrameworkStores<DiamondAssessmentDbContext>()
-    .AddDefaultTokenProviders();
-
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Account/Logout";
-});
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
+// ==================== JWT Authentication ====================
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
 
 builder.Services.AddAuthentication(options =>
@@ -89,27 +94,52 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Issuer"],
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
+
+    // 👇 VERY IMPORTANT: Allow reading JWT from query string for SignalR
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hub/chat"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
+// ==================== Authorization ====================
 builder.Services.AddAuthorization();
 
-// Configure CORS
+// ==================== CORS ====================
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("http://localhost:3000")
-                          .AllowAnyHeader()
-                          .AllowAnyMethod());
+    options.AddPolicy("AllowSpecificOrigin", policy =>
+    {
+        policy
+            .SetIsOriginAllowed(origin =>
+            {
+                // Allow any localhost (HTTP/HTTPS) during development
+                if (origin != null && (origin.StartsWith("http://localhost") || origin.StartsWith("https://localhost")))
+                    return true;
+                return false;
+            })
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
 });
+
+// ==================== Swagger ====================
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
+// ==================== Database seeding ====================
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -120,10 +150,30 @@ using (var scope = app.Services.CreateScope())
     await RoleSeeder.SeedRolesAsync(roleManager, logger);
 }
 
-app.UseHttpsRedirection();
-app.UseCors("AllowSpecificOrigin"); // Enable CORS using the specified policy
+// ==================== Middleware ====================
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// OPTIONAL
+// Only redirect HTTPS if not localhost
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseCors("AllowSpecificOrigin");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+app.MapHub<ChatHub>("/hub/chat").RequireCors("AllowSpecificOrigin");
 
 app.Run();

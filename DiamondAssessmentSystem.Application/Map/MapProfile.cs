@@ -75,6 +75,12 @@ namespace DiamondAssessmentSystem.Application.Map
 
             CreateMap<Conversation, ConversationDTO>();
             CreateMap<ChatLog, ChatLogDTO>();
+            CreateMap<ChatLog, MessageResponseDTO>()
+                .ForMember(dest => dest.SenderRole, opt => opt.MapFrom(src => src.SenderRole.ToString()))
+                .ForMember(dest => dest.MessageType, opt => opt.MapFrom(src => src.MessageType.ToString()));
+            CreateMap<CreateMessageDTO, ChatLog>();
+
+            CreateMap<ChatLogDTO, MessageResponseDTO>();
         }
     }
 }

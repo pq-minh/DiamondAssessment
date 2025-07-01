@@ -1,13 +1,8 @@
 ﻿using DiamondAssessmentSystem.Infrastructure.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Application.DTO
 {
-    public class ChatLogDTO
+    public class MessageResponseDTO
     {
         public int ChatId { get; set; }
         public int ConversationId { get; set; }
@@ -18,9 +13,7 @@ namespace DiamondAssessmentSystem.Application.DTO
         public string? Message { get; set; }
         public string? FilePath { get; set; }
         public string? FileName { get; set; }
-        public string? SavedFileName { get; set; }
         public int? FileSize { get; set; }
-        public bool IsRead { get; set; }
         public DateTime SentAt { get; set; }
     }
 }

@@ -142,11 +142,16 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                     b.Property<int?>("RequestId")
                         .HasColumnType("int");
 
+                    b.Property<string>("SavedFileName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("SenderId")
                         .HasColumnType("int");
 
+                    b.Property<string>("SenderName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SenderRole")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 

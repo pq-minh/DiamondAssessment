@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using DiamondAssessmentSystem.Infrastructure.Enums;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,8 @@ public partial class DiamondAssessmentDbContext : IdentityDbContext<User>
     public virtual DbSet<Blog> Blogs { get; set; }
 
     public virtual DbSet<Certificate> Certificates { get; set; }
+
+    public MessageType MessageType { get; set; }
 
     public virtual DbSet<ChatLog> ChatLogs { get; set; }
     public virtual DbSet<Conversation> Conversations { get; set; }
@@ -106,6 +109,9 @@ public partial class DiamondAssessmentDbContext : IdentityDbContext<User>
         {
             entity.HasKey(e => e.ConversationId);
 
+            entity.Property(e => e.ConversationId)
+                  .ValueGeneratedOnAdd();
+
             entity.Property(e => e.Status)
                   .HasMaxLength(20)
                   .HasDefaultValue("open");
@@ -127,6 +133,9 @@ public partial class DiamondAssessmentDbContext : IdentityDbContext<User>
         modelBuilder.Entity<ChatLog>(entity =>
         {
             entity.HasKey(e => e.ChatId);
+
+            entity.Property(e => e.ChatId)
+                  .ValueGeneratedOnAdd();
 
             entity.Property(e => e.MessageType)
                   .HasConversion<string>()

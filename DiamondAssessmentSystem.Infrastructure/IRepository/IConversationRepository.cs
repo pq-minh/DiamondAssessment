@@ -14,5 +14,6 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
         Task<Conversation?> GetByIdAsync(int conversationId);
         Task AddAsync(Conversation conversation);
         Task UpdateAsync(Conversation conversation);
+        Task<List<Conversation>> GetConversationsByEmployeeIdAsync(int employeeId);
     }
 }

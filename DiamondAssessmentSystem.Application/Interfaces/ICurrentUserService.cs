@@ -11,5 +11,6 @@ namespace DiamondAssessmentSystem.Application.Interfaces
         string? UserId { get; }
         string? UserName { get; }
         string? Role { get; }
+        int? AssociatedId { get; }
     }
 }

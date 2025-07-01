@@ -10,6 +10,7 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
     public interface IChatLogRepository
     {
         Task<List<ChatLog>> GetByConversationIdAsync(int conversationId);
-        Task AddAsync(ChatLog chatLog);
+        Task<ChatLog> AddAsync(ChatLog chatLog);
+        Task<ChatLog?> GetByIdAsync(int chatId);
     }
 }
