@@ -19,7 +19,6 @@ namespace DiamondAssessmentSystem.Controllers
             _currentUser = currentUser;
         }
 
-        // GET: api/Result
         //[Authorize(Roles = "Consultant")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ResultDto>>> GetResults()
@@ -41,7 +40,6 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(results);
         }
 
-        // GET: api/Result/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ResultDto>> GetResult(int id)
         {
@@ -54,15 +52,15 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(result);
         }
 
-        // POST: api/Result
         [HttpPost]
-        public async Task<ActionResult<ResultDto>> PostResult(ResultCreateDto resultCreateDto)
+        public async Task<ActionResult<ResultDto>> CreateResult(int orderId, ResultCreateDto resultCreateDto)
         {
-            var createdResult = await _resultService.CreateResultAsync(resultCreateDto);
-            return CreatedAtAction(nameof(GetResult), new { id = createdResult.ResultId }, createdResult);
+            var createdResult = await _resultService.CreateResultAsync(orderId, resultCreateDto);
+            if (createdResult) { return NoContent(); }
+            return BadRequest();
         }
 
-        // PUT: api/Result/5
+        
         [HttpPut("{id}")]
         public async Task<IActionResult> PutResult(int id, ResultCreateDto resultCreateDto)
         {
@@ -75,7 +73,7 @@ namespace DiamondAssessmentSystem.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Result/5
+        
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteResult(int id)
         {

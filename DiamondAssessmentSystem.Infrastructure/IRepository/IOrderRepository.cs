@@ -6,12 +6,12 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
 {
     public interface IOrderRepository
     {
-        Task<IEnumerable<Order>> GetOrdersAsync();
-        Task<Order> GetOrderByIdAsync(int id);
-        Task<IEnumerable<Order>> GetOrdersByCustomers(int customerId);
-        Task<int> GetCurentOrderId(string userId);
-        Task<Order> CreateOrderAsync(Order order);
+        Task<IEnumerable<Order>> GetOrders();
+        Task<Order?> GetOrderById(int id);
+        Task<IEnumerable<Order>> GetOrdersByCustomers(string userId);
+        Task<int> GetCurentOrderId(string? userId);
+        Task<bool> CreateOrderAsync(string userId, Order order);
         Task<bool> UpdateOrderAsync(Order order);
-        Task<bool> DeleteOrderAsync(int id);
+        Task<bool> DeleteOrder(int id);
     }
 }

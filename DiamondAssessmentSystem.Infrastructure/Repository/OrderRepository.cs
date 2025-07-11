@@ -15,7 +15,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<Order>> GetOrdersAsync()
+        public async Task<IEnumerable<Order>> GetOrders()
         {
             return await _context.Orders
                 .Include(o => o.Customer)       
@@ -24,16 +24,18 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Order>> GetOrdersByCustomers(int customerId)
+        public async Task<IEnumerable<Order>> GetOrdersByCustomers(string userId)
         {
+            var customerId = await GetCustomerId(userId);
+
             return await _context.Orders
-                .Include(o => o.Customer)
+                .Include(o => o.Customer.CustomerId == customerId)
                 .Include(o => o.Payments)
                 .Include(o => o.Service)
                 .ToListAsync();
         }
 
-        public async Task<Order> GetOrderByIdAsync(int id)
+        public async Task<Order?> GetOrderById(int id)
         {
             return await _context.Orders
                 .Include(o => o.Customer)
@@ -42,7 +44,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 .FirstOrDefaultAsync(o => o.OrderId == id);
         }
 
-        public async Task<int> GetCurentOrderId(string userId)
+        public async Task<int> GetCurentOrderId(string? userId)
         {
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
             
@@ -57,7 +59,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             if (order != null)
             {
                 orderId = order.OrderId;
-                if (orderId <= 0 || orderId == null)
+                if (orderId <= 0)
                 {
                     orderId = 0;
                 }
@@ -67,11 +69,14 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return orderIdNext;
         }
 
-        public async Task<Order> CreateOrderAsync(Order order)
+        public async Task<bool> CreateOrderAsync(string userId, Order order)
         {
+            var customerId = await GetCustomerId(userId);
+            order.CustomerId = customerId;
+
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
-            return order;
+            return true;
         }
 
         public async Task<bool> UpdateOrderAsync(Order order)
@@ -92,15 +97,17 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             }
         }
 
-        public async Task<bool> DeleteOrderAsync(int id)
+        public async Task<bool> DeleteOrder(int id)
         {
             var order = await _context.Orders.FindAsync(id);
+
             if (order == null)
             {
                 return false;
             }
 
-            _context.Orders.Remove(order);
+            order.Status = "Canceled";
+            _context.Orders.Update(order);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -108,6 +115,18 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         private async Task<bool> OrderExistsAsync(int id)
         {
             return await _context.Orders.AnyAsync(e => e.OrderId == id);
+        }
+
+        private async Task<int> GetCustomerId(string userId)
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserId == userId);
+
+            if (customer == null)
+            {
+                return -1;
+            }
+
+            return customer.CustomerId;
         }
     }
 }

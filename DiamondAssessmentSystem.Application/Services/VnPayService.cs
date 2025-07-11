@@ -4,11 +4,6 @@ using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Application.Services
 {
@@ -16,18 +11,19 @@ namespace DiamondAssessmentSystem.Application.Services
     {
         private readonly IConfiguration _config;
         private readonly IOrderRepository _orderRepository;
-        private readonly IOrderService _orderService;
+        private readonly ICurrentUserService _currentUser;
 
-        public VnPayService(IConfiguration config, IOrderRepository orderRepository, IOrderService orderService)
+        public VnPayService(IConfiguration config, IOrderRepository orderRepository, ICurrentUserService currentUser)
         {
             _config = config;
             _orderRepository = orderRepository;
-            _orderService = orderService;
+            _currentUser = currentUser;
         }
         public async Task<string> CreatePatmentUrl(HttpContext content, VnPaymentRequestDto paymentRequestModel)
         {
             var tick = DateTime.Now.Ticks.ToString();
-            var orderId = await _orderService.GetCurentOrderId();
+            var userId = _currentUser.UserId;
+            var orderId = await _orderRepository.GetCurentOrderId(userId);
             var vnpay = new VnPayLibrary();
             vnpay.AddRequestData("vnp_Version", _config["VnPay:Version"]);
             vnpay.AddRequestData("vnp_Command", _config["VnPay:Command"]);

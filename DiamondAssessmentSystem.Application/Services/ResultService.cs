@@ -13,13 +13,15 @@ namespace DiamondAssessmentSystem.Application.Services
     {
         private readonly IResultRepository _resultRepository;
         private readonly ICertificateRepository _certificateRepository;
+        private readonly IOrderRepository _orderRepository;
         private readonly IMapper _mapper;
 
-        public ResultService(IResultRepository resultRepository, IMapper mapper, ICertificateRepository certificateRepository)
+        public ResultService(IResultRepository resultRepository, IMapper mapper, ICertificateRepository certificateRepository, IOrderRepository orderRepository)
         {
             _resultRepository = resultRepository;
             _mapper = mapper;
             _certificateRepository = certificateRepository;
+            _orderRepository = orderRepository;
         }
 
         // Lấy danh sách kết quả
@@ -48,12 +50,24 @@ namespace DiamondAssessmentSystem.Application.Services
         }
 
         // Tạo kết quả mới
-        public async Task<ResultDto> CreateResultAsync(ResultCreateDto resultCreateDto)
+        public async Task<bool> CreateResultAsync(int orderId, ResultCreateDto resultCreateDto)
         {
+            var order = await _orderRepository.GetOrderById(orderId);
+            
+            if (order == null)
+            {
+                return false;
+            }
+
             var result = _mapper.Map<Result>(resultCreateDto);  
 
             var createdResult = await _resultRepository.CreateResultAsync(result);
-            return _mapper.Map<ResultDto>(createdResult);
+
+            if (createdResult == null)
+            {
+                return false;
+            }
+            return true;
         }
 
         // Cập nhật kết quả

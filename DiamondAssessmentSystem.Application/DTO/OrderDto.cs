@@ -9,36 +9,39 @@ namespace DiamondAssessmentSystem.Application.DTO
     {
         public int OrderId { get; set; }
 
-        public DateOnly OrderDate { get; set; }
+        public DateTime OrderDate { get; set; }
 
-        public int CustomerId { get; set; }
+        public int ServiceId { get; set; }
 
-        public string Status { get; set; } = null!;
+        public string ServiceType { get; set; }
 
         public decimal TotalPrice { get; set; }
 
-        public int? ConsultantId { get; set; }
-
-        public int? ReceiptId { get; set; }
-
-        public int? SealingId { get; set; }
-
-        public int? CommitmentId { get; set; }
-
-        public string ServiceType { get; set; } = null!;
-
-        public virtual CommitmentRecord? Commitment { get; set; }
-
-        public virtual Employee? Consultant { get; set; }
-
-        public virtual Customer Customer { get; set; } = null!;
+        public string Status { get; set; } = null!;
     }
 
 
     public class OrderCreateDto
     {
-        public string OrderDetailId { get; set; }  // Giả sử là một chuỗi chứa nhiều OrderDetailId
-        public int CustomerId { get; set; }
         public DateTime OrderDate { get; set; }
+
+        public int ServiceId { get; set; }
+
+        public decimal TotalPrice { get; set; }
+    }
+
+    public class orderPaymentDto
+    {
+        public VnPaymentResponseFromFe? request { get; set; }
+
+        public int requestId { get; set; }
+
+        public string paymentType { get; set; }
+    }
+
+    public class orderCreateCombine
+    {
+        public OrderCreateDto OrderCreateDto { get; set; }
+        public orderPaymentDto orderPaymentDto { get; set; }
     }
 }

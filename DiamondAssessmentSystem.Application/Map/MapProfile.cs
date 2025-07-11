@@ -119,7 +119,9 @@ namespace DiamondAssessmentSystem.Application.Map
             CreateMap<Certificate, CertificateCreateDto>().ReverseMap();
 
             CreateMap<Blog, BlogDto>().ReverseMap();
+
             CreateMap<Conversation, ConversationDTO>();
+
             CreateMap<ChatLog, ChatLogDTO>();
             CreateMap<ChatLog, MessageResponseDTO>()
                 .ForMember(dest => dest.SenderRole, opt => opt.MapFrom(src => src.SenderRole.ToString()))
@@ -127,6 +129,11 @@ namespace DiamondAssessmentSystem.Application.Map
             CreateMap<CreateMessageDTO, ChatLog>();
 
             CreateMap<ChatLogDTO, MessageResponseDTO>();
+
+            CreateMap<OrderCreateDto, Order>().ReverseMap();
+
+            CreateMap<Order, OrderDto>()
+                .ForMember(dest => dest.ServiceType, opt => opt.MapFrom(src => src.Service.ServiceType));
         }
     }
 }
