@@ -18,12 +18,20 @@ namespace DiamondAssessmentSystem.Controllers
             _resultService = resultService;
             _currentUser = currentUser;
         }
-
+        
         //[Authorize(Roles = "Consultant")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ResultDto>>> GetResults()
         {
             var results = await _resultService.GetResultsAsync();
+            return Ok(results);
+        }
+
+        //[Authorize(Roles = "Consultant")]
+        [HttpGet("by-customer")]
+        public async Task<ActionResult<IEnumerable<ResultDto>>> GetResults(int customerId)
+        {
+            var results = await _resultService.GetResultsAsync(customerId);
             return Ok(results);
         }
 

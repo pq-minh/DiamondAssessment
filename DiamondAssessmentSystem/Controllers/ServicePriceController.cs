@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using DiamondAssessmentSystem.Application.DTO;
+﻿using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -12,99 +11,77 @@ namespace DiamondAssessmentSystem.WebAPI.Controllers
     public class ServicePriceController : ControllerBase
     {
         private readonly IServicePriceService _servicePriceService;
-        private readonly IMapper _mapper;
 
-        public ServicePriceController(IServicePriceService servicePriceService, IMapper mapper)
+        public ServicePriceController(IServicePriceService servicePriceService)
         {
             _servicePriceService = servicePriceService;
-            _mapper = mapper;
         }
 
-        // GET: api/ServicePrice
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ServicePriceDto>>> GetServicePrices()
+        public async Task<ActionResult<IEnumerable<ServicePriceDto>>> GetAll()
         {
-            var servicePrices = await _servicePriceService.GetServicePrices();
+            var result = await _servicePriceService.GetAllAsync();
 
-            if (servicePrices == null)
-            {
-                return NotFound("No service prices found.");
-            }
+            if (result == null || !result.Any())
+                return NoContent();
 
-            return Ok(servicePrices);
+            return Ok(result);
         }
 
-        [HttpGet("act")]
-        public async Task<ActionResult<IEnumerable<ServicePriceDto>>> GetServicePrices(string status)
+        [HttpGet("by-status/{status}")]
+        public async Task<ActionResult<IEnumerable<ServicePriceDto>>> GetByStatus(string status)
         {
-            var servicePrices = await _servicePriceService.GetServicePrices(status);
+            var result = await _servicePriceService.GetByStatusAsync(status);
 
-            if (servicePrices == null)
-            {
-                return NotFound("No service prices found.");
-            }
+            if (result == null || !result.Any())
+                return NoContent();
 
-            return Ok(servicePrices);
+            return Ok(result);
         }
 
-        // GET: api/ServicePrice/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<ServicePriceDto>> GetServicePrice(int id)
+        public async Task<ActionResult<ServicePriceDto>> GetById(int id)
         {
-            var servicePrice = await _servicePriceService.GetServicePrice(id);
+            var servicePrice = await _servicePriceService.GetByIdAsync(id);
 
             if (servicePrice == null)
-            {
                 return NotFound($"Service price with ID {id} not found.");
-            }
 
             return Ok(servicePrice);
         }
 
-        // POST: api/ServicePrice
         [HttpPost]
-        public async Task<ActionResult<ServicePriceDto>> PostServicePrice(ServicePriceCreateDto servicePriceCreateDto)
+        public async Task<ActionResult<ServicePriceDto>> Create([FromBody] ServicePriceCreateDto dto)
         {
-            if (servicePriceCreateDto == null)
-            {
-                return BadRequest("Invalid service price data.");
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var createdServicePriceDto = await _servicePriceService.PostServicePrice(servicePriceCreateDto);
+            var created = await _servicePriceService.CreateAsync(dto);
 
-            // Return the created resource with a Location header pointing to the newly created resource
-            return CreatedAtAction(nameof(GetServicePrice), new { id = createdServicePriceDto.ServiceId }, createdServicePriceDto);
+            return CreatedAtAction(nameof(GetById), new { id = created.ServiceId }, created);
         }
 
-        // PUT: api/ServicePrice/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateServicePrice(int id, ServicePriceCreateDto servicePriceCreateDto)
+        public async Task<IActionResult> Update(int id, [FromBody] ServicePriceCreateDto dto)
         {
-            if (servicePriceCreateDto == null)
-            {
-                return BadRequest("Invalid service price data.");
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var updated = await _servicePriceService.UpdateServicePrice(id, servicePriceCreateDto);
+            var updated = await _servicePriceService.UpdateAsync(id, dto);
 
             if (!updated)
-            {
                 return NotFound($"Service price with ID {id} not found.");
-            }
 
             return NoContent();
         }
 
-        // DELETE: api/ServicePrice/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteServicePrice(int id)
+        public async Task<IActionResult> SoftDelete(int id)
         {
-            var deleted = await _servicePriceService.DeleteServicePrice(id);
+            var deleted = await _servicePriceService.SoftDeleteAsync(id);
 
             if (!deleted)
-            {
                 return NotFound($"Service price with ID {id} not found.");
-            }
 
             return NoContent();
         }

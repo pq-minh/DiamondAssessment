@@ -3,80 +3,76 @@ using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Application.Services
 {
     public class RequestService : IRequestService
     {
         private readonly IRequestRepository _requestRepository;
-        private readonly ICurrentUserService _currentUser;
+        private readonly ICustomerRepository _customerRepository;
         private readonly IMapper _mapper;
 
-        public RequestService(IRequestRepository requestRepository, ICurrentUserService currentUser, IMapper mapper)
+        public RequestService(IRequestRepository requestRepository, ICustomerRepository customerRepository, IMapper mapper)
         {
             _requestRepository = requestRepository;
-            _currentUser = currentUser;
+            _customerRepository = customerRepository;
             _mapper = mapper;
         }
 
-        // Lấy danh sách tất cả các yêu cầu
-        public async Task<IEnumerable<RequestDto>> GetFormsAsync()
+        public async Task<IEnumerable<RequestDto>> GetRequestsAsync()
         {
-            var forms = await _requestRepository.GetRequestsAsync();
-            return _mapper.Map<IEnumerable<RequestDto>>(forms);
+            var requests = await _requestRepository.GetRequestsAsync();
+            return _mapper.Map<IEnumerable<RequestDto>>(requests);
         }
 
-        // Lấy thông tin chi tiết một yêu cầu theo ID
-        public async Task<RequestDto> GetFormByIdAsync(int id)
+        public async Task<RequestDto?> GetRequestByIdAsync(int id)
         {
-            var form = await _requestRepository.GetRequestByIdAsync(id);
-            if (form == null) return null;
-            return _mapper.Map<RequestDto>(form);
+            var request = await _requestRepository.GetRequestByIdAsync(id);
+            return request == null ? null : _mapper.Map<RequestDto>(request);
         }
 
-        // Lấy yêu cầu theo CustomerId (lịch sử của người dùng)
         public async Task<IEnumerable<RequestDto>> GetRequestsByCustomerIdAsync(string userId)
         {
             var requests = await _requestRepository.GetRequestsByCustomerIdAsync(userId);
             return _mapper.Map<IEnumerable<RequestDto>>(requests);
         }
 
-        // Tạo một bản nháp yêu cầu mới
-        public async Task<bool> CreateDraftRequestAsync(string userId, RequestCreateDto draftDto)
+        /// <summary>
+        /// Unified method to create Draft or Official request for a Customer
+        /// </summary>
+        public async Task<RequestDto?> CreateRequestForCustomerAsync(string userId, RequestCreateDto dto, string status)
         {
-            var draft = _mapper.Map<Request>(draftDto);
-            draft.Status = "Draft";
+            var customerId = await _customerRepository.GetCustomerIdAsync(userId);
+            if (customerId == -1)
+                return null;
 
-            var res = await _requestRepository.CreateDraftRequest(userId, draft);
- 
-            return res;
+            var request = _mapper.Map<Request>(dto);
+            request.CustomerId = customerId;
+            request.Status = status;
+            request.RequestDate = DateTime.UtcNow;
+
+            var created = await _requestRepository.CreateRequestAsync(request);
+            return _mapper.Map<RequestDto>(created);
         }
 
-        // Hủy yêu cầu nếu nó là bản nháp
-        public async Task<bool> CancelRequest(string userId, int requestId)
+        public async Task<bool> CancelRequestAsync(string userId, int requestId)
         {
             return await _requestRepository.CancelRequestAsync(userId, requestId);
         }
 
-        // Tạo yêu cầu chính thức
-        public async Task<RequestDto> CreateFormAsync(RequestCreateDto formCreateDto)
+        public async Task<bool> UpdateRequestAsync(int id, RequestCreateDto updateDto)
         {
-            var form = _mapper.Map<Request>(formCreateDto);
-            form.Status = "Pending"; // đảm bảo trạng thái mặc định
-            var created = await _requestRepository.CreateRequestAsync(form);
-            return _mapper.Map<RequestDto>(created);
-        }
+            var existingRequest = await _requestRepository.GetRequestByIdAsync(id);
+            if (existingRequest == null)
+                return false;
 
-        // Cập nhật yêu cầu
-        public async Task<bool> UpdateFormAsync(int id, RequestCreateDto formCreateDto)
-        {
-            var existingForm = await _requestRepository.GetRequestByIdAsync(id);
-            if (existingForm == null) return false;
+            if (existingRequest.Status != "Draft")
+            {
+                return false; // Only Draft can be updated
+            }
 
-            _mapper.Map(formCreateDto, existingForm);
-            return await _requestRepository.UpdateRequestAsync(existingForm);
+            _mapper.Map(updateDto, existingRequest);
+            return await _requestRepository.UpdateRequestAsync(existingRequest);
         }
     }
 }

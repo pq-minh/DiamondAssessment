@@ -3,7 +3,9 @@ using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
-using PhoneNumbers;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Application.Services
 {
@@ -16,7 +18,13 @@ namespace DiamondAssessmentSystem.Application.Services
         private readonly IVnPayService _vnPayService;
         private readonly IMapper _mapper;
 
-        public OrderService(IOrderRepository orderRepository, IMapper mapper, ICurrentUserService currentUser, IRequestRepository requestRepository, IVnPayService vnPayService, IPaymentRepository paymentRepository)
+        public OrderService(
+            IOrderRepository orderRepository,
+            IMapper mapper,
+            ICurrentUserService currentUser,
+            IRequestRepository requestRepository,
+            IVnPayService vnPayService,
+            IPaymentRepository paymentRepository)
         {
             _orderRepository = orderRepository;
             _currentUser = currentUser;
@@ -28,193 +36,139 @@ namespace DiamondAssessmentSystem.Application.Services
 
         public async Task<IEnumerable<OrderDto>> GetOrdersAsync()
         {
-            var orders = await _orderRepository.GetOrders();
-            return _mapper.Map<IEnumerable<OrderDto>>(orders); 
-        }
-
-        public async Task<OrderDto> GetOrderByIdAsync(int id)
-        {
-            var order = await _orderRepository.GetOrderById(id);
-
-            if (order == null)
-            {
-                return null;
-            }
-
-            return _mapper.Map<OrderDto>(order); 
-        }
-
-        public async Task<IEnumerable<OrderDto>> GetOrdersByCustomers(string userId)
-        {
-            var orders = await _orderRepository.GetOrdersByCustomers(userId);
+            var orders = await _orderRepository.GetOrdersAsync();
             return _mapper.Map<IEnumerable<OrderDto>>(orders);
         }
 
-        public async Task<int> GetCurentOrderId()
+        public async Task<OrderDto?> GetOrderByIdAsync(int id)
         {
-            var orderId = await _orderRepository.GetCurentOrderId(_currentUser.UserId);
-            return orderId;
+            var order = await _orderRepository.GetOrderByIdAsync(id);
+            return order == null ? null : _mapper.Map<OrderDto>(order);
         }
 
-        public async Task<bool> CreateOrder(string userId, int requestId, OrderCreateDto orderCreateDto, string paymentType, VnPaymentResponseFromFe request)
+        public async Task<IEnumerable<OrderDto>> GetOrdersByCustomerAsync(string userId)
         {
-            if (!(await UpdateRequest(requestId))) return false;
+            var orders = await _orderRepository.GetOrdersByCustomerAsync(userId);
+            return _mapper.Map<IEnumerable<OrderDto>>(orders);
+        }
+
+        public async Task<bool> CreateOrderAsync(
+            string userId,
+            int requestId,
+            OrderCreateDto orderCreateDto,
+            string paymentType,
+            VnPaymentResponseFromFe paymentRequest)
+        {
+            if (!await UpdateRequestStatusAsync(requestId))
+                return false;
 
             if (orderCreateDto == null)
-            {
-                throw new ArgumentNullException(nameof(orderCreateDto), "OrderCreateDto is null.");
-            }
+                throw new ArgumentNullException(nameof(orderCreateDto));
 
             var order = _mapper.Map<Order>(orderCreateDto);
 
             if (paymentType == "Online")
             {
-                var response = _vnPayService.ExecutePayment(request);
-
-                if (response == null || !response.Success)
-                {
+                var paymentResult = _vnPayService.ExecutePayment(paymentRequest);
+                if (paymentResult == null || !paymentResult.Success)
                     return false;
-                }
 
-                var createdOrder = await _orderRepository.CreateOrderAsync(userId, order);
-
-                if (createdOrder != true)
-                {
-                    throw new InvalidOperationException("A problem happened while handling your request.");
-                }
-
-                var status = "Completed";
-                var paymentUpdate = await _paymentRepository.UpdatePayment(userId, status, paymentType);
-
-                return paymentUpdate;
+                order.Status = "Completed";
             }
-            else if(paymentType == "Ofline")
+            else if (paymentType == "Offline")
             {
                 order.Status = "Pending";
-
-                var createdOrder = await _orderRepository.CreateOrderAsync(userId, order);
-
-                if (createdOrder != true)
-                {
-                    throw new InvalidOperationException("A problem happened while handling your request.");
-                }
-
-                var status = "Pending";
-                var paymentUpdate = await _paymentRepository.UpdatePayment(userId, status, paymentType);
-
-                return paymentUpdate;
             }
             else
             {
-                throw new ArgumentNullException(nameof(orderCreateDto), "Wrong type");
+                throw new ArgumentException($"Unsupported payment type: {paymentType}");
             }
-        }
 
-        public async Task<bool> UpdateOrderAsync(int id, OrderCreateDto orderCreateDto)
-        {
-            var existingOrder = await _orderRepository.GetOrderById(id);
+            var created = await _orderRepository.CreateOrderAsync(userId, order);
+            if (!created)
+                throw new InvalidOperationException("Problem creating order.");
 
-            if (existingOrder == null)
+            var payment = await _paymentRepository.GetPaymentByOrderId(order.OrderId);
+            if (payment == null)
             {
-                return false; 
+                var newPayment = new Payment
+                {
+                    OrderId = order.OrderId,
+                    PaymentDate = DateTime.UtcNow,
+                    Amount = order.TotalPrice,
+                    Method = paymentType,
+                    Status = order.Status
+                };
+                await _paymentRepository.CreatePayment(newPayment);
             }
-
-            _mapper.Map(orderCreateDto, existingOrder); 
-
-            return await _orderRepository.UpdateOrderAsync(existingOrder); 
-        }
-
-        public async Task<bool> DeleteOrderAsync(int id)
-        {
-            return await _orderRepository.DeleteOrder(id); 
-        }
-
-        public async Task<bool> UpdatePayment(string userId, int orderId, String status)
-        {
-            var order = await _orderRepository.GetOrderById(orderId);
-
-            if (order == null)
+            else
             {
-                return false;
+                payment.Method = paymentType;
+                payment.Status = order.Status;
+                await _paymentRepository.UpdatePayment(payment);
             }
-
-            var method = "Ofline";
-
-            return await _paymentRepository.UpdatePayment(userId, status, method);
-        }
-
-        private async Task<bool> UpdateRequest(int requestId)
-        {
-            var request = await _requestRepository.GetRequestByIdAsync(requestId);
-
-            if (request == null)
-            {
-                return false;
-            }
-
-            request.Status = "Pending";
-            await _requestRepository.UpdateRequestAsync(request);
 
             return true;
         }
 
-        public async Task<PaymentDto> PayByVnpay(string userId, VnPaymentResponseFromFe request)
+        public async Task<bool> UpdateOrderAsync(int id, OrderCreateDto orderCreateDto)
         {
-            if (request == null)
-            {
-                return new PaymentDto
-                {
-                    Status = "Failed",
-                    Message = "Paramaters can not identify"
-                };
-            }
-            var response = _vnPayService.ExecutePayment(request);
-            if (response == null || !response.Success)
-            {
-                return new PaymentDto
-                {
-                    Status = "Failed",
-                    Message = $"PaymentFail {response?.VnPayResponseCode}"
-                };
+            var existing = await _orderRepository.GetOrderByIdAsync(id);
+            if (existing == null)
+                return false;
 
-            }
-            var paymentUpdate = await _paymentRepository.UpdatePayment(userId, "Completed", "Online");
-            if (paymentUpdate)
+            if (existing.Status == "Completed" || existing.Status == "Canceled")
             {
-                return new PaymentDto
+                return false; 
+            }
+
+            _mapper.Map(orderCreateDto, existing);
+            return await _orderRepository.UpdateOrderAsync(existing);
+        }
+
+        public async Task<bool> CancelOrderAsync(int id)
+        {
+            return await _orderRepository.CancelOrderAsync(id);
+        }
+
+        public async Task<bool> UpdatePaymentAsync(string userId, int orderId, string status)
+        {
+            var order = await _orderRepository.GetOrderByIdAsync(orderId);
+            if (order == null || order.Customer.UserId != userId)
+            {
+                return false;
+            }
+
+            var payment = await _paymentRepository.GetPaymentByOrderId(orderId);
+            if (payment == null)
+            {
+                var newPayment = new Payment
                 {
-                    Status = "Completed",
-                    Message = "Payment successful."
+                    OrderId = orderId,
+                    PaymentDate = DateTime.UtcNow,
+                    Amount = order.TotalPrice,
+                    Method = "Offline",
+                    Status = status
                 };
+                return await _paymentRepository.CreatePayment(newPayment);
             }
             else
             {
-                return new PaymentDto
-                {
-                    Status = "Failed",
-                    Message = "Payment unsuccessful."
-                };
+                payment.Status = status;
+                payment.Method = "Offline";
+                payment.PaymentDate = DateTime.UtcNow;
+                return await _paymentRepository.UpdatePayment(payment);
             }
         }
 
-        private bool IsPhoneNumberValid(string phoneNumber, string regionCode)
+        private async Task<bool> UpdateRequestStatusAsync(int requestId)
         {
-            if (string.IsNullOrWhiteSpace(phoneNumber))
-            {
+            var request = await _requestRepository.GetRequestByIdAsync(requestId);
+            if (request == null)
                 return false;
-            }
 
-            try
-            {
-                var phoneNumberUtil = PhoneNumberUtil.GetInstance();
-                var parsedNumber = phoneNumberUtil.Parse(phoneNumber, regionCode);
-                return phoneNumberUtil.IsValidNumber(parsedNumber);
-            }
-            catch (NumberParseException)
-            {
-                return false;
-            }
+            request.Status = "Pending";
+            return await _requestRepository.UpdateRequestAsync(request);
         }
-
     }
 }

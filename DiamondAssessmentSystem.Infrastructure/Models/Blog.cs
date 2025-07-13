@@ -11,6 +11,8 @@ public partial class Blog
 
     public string Content { get; set; } = null!;
 
+    public string? ImageUrl { get; set; }
+
     public int EmployeeId { get; set; }
 
     public DateTime CreatedDate { get; set; }

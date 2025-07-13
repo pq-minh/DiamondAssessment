@@ -23,7 +23,7 @@ namespace DiamondAssessmentSystem.Application.Services
         {
             var tick = DateTime.Now.Ticks.ToString();
             var userId = _currentUser.UserId;
-            var orderId = await _orderRepository.GetCurentOrderId(userId);
+            var orderId = await _orderRepository.GetOrdersByCustomerAsync(userId);
             var vnpay = new VnPayLibrary();
             vnpay.AddRequestData("vnp_Version", _config["VnPay:Version"]);
             vnpay.AddRequestData("vnp_Command", _config["VnPay:Command"]);

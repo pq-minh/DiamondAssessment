@@ -2,6 +2,7 @@
 using DiamondAssessmentSystem.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Infrastructure.Repository
@@ -15,32 +16,33 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<ServicePrice>> GetServicePricesAsync()
+        public async Task<IEnumerable<ServicePrice>> GetAllAsync()
         {
             return await _context.ServicePrices.ToListAsync();
         }
 
-        public async Task<IEnumerable<ServicePrice>> GetServicePrices(string status)
+        public async Task<IEnumerable<ServicePrice>> GetByStatusAsync(string status)
         {
-            return await _context.ServicePrices.Where(s => s.Status == status).ToListAsync();
+            return await _context.ServicePrices
+                                 .Where(sp => sp.Status == status)
+                                 .ToListAsync();
         }
 
-        public async Task<ServicePrice?> GetServicePriceByIdAsync(int id)
+        public async Task<ServicePrice?> GetByIdAsync(int id)
         {
             return await _context.ServicePrices.FindAsync(id);
         }
 
-        public async Task<ServicePrice> CreateServicePriceAsync(ServicePrice servicePrice)
+        public async Task<ServicePrice> AddAsync(ServicePrice servicePrice)
         {
             _context.ServicePrices.Add(servicePrice);
             await _context.SaveChangesAsync();
             return servicePrice;
         }
 
-        public async Task<bool> UpdateServicePriceAsync(ServicePrice servicePrice)
+        public async Task<bool> UpdateAsync(ServicePrice servicePrice)
         {
             _context.Entry(servicePrice).State = EntityState.Modified;
-
             try
             {
                 await _context.SaveChangesAsync();
@@ -48,17 +50,16 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!await ServicePriceExistsAsync(servicePrice.ServiceId)) 
-                {
+                if (!await ExistsAsync(servicePrice.ServiceId))
                     return false;
-                }
+
                 throw;
             }
         }
 
-        private async Task<bool> ServicePriceExistsAsync(int id)
+        private async Task<bool> ExistsAsync(int id)
         {
-            return await _context.ServicePrices.AnyAsync(e => e.ServiceId == id); 
+            return await _context.ServicePrices.AnyAsync(e => e.ServiceId == id);
         }
     }
 }

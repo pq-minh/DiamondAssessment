@@ -31,6 +31,12 @@ namespace DiamondAssessmentSystem.Application.Services
             return _mapper.Map<IEnumerable<ResultDto>>(results);  
         }
 
+        public async Task<IEnumerable<ResultDto>> GetResultsAsync(int customerId)
+        {
+            var results = await _resultRepository.GetResultsAsync(customerId);
+            return _mapper.Map<IEnumerable<ResultDto>>(results);
+        }
+
         public async Task<IEnumerable<ResultDto>> GetPersonalResults(string userId)
         {
             var results = await _resultRepository.GetPersonalResults(userId);
@@ -52,7 +58,7 @@ namespace DiamondAssessmentSystem.Application.Services
         // Tạo kết quả mới
         public async Task<bool> CreateResultAsync(int orderId, ResultCreateDto resultCreateDto)
         {
-            var order = await _orderRepository.GetOrderById(orderId);
+            var order = await _orderRepository.GetOrderByIdAsync(orderId);
             
             if (order == null)
             {

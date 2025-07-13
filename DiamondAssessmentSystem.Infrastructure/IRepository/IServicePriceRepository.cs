@@ -6,10 +6,10 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
 {
     public interface IServicePriceRepository
     {
-        Task<IEnumerable<ServicePrice>> GetServicePricesAsync();
-        Task<IEnumerable<ServicePrice>> GetServicePrices(string status);
-        Task<ServicePrice?> GetServicePriceByIdAsync(int id);
-        Task<ServicePrice> CreateServicePriceAsync(ServicePrice servicePrice);
-        Task<bool> UpdateServicePriceAsync(ServicePrice servicePrice);
+        Task<IEnumerable<ServicePrice>> GetAllAsync();
+        Task<IEnumerable<ServicePrice>> GetByStatusAsync(string status);
+        Task<ServicePrice?> GetByIdAsync(int id);
+        Task<ServicePrice> AddAsync(ServicePrice servicePrice);
+        Task<bool> UpdateAsync(ServicePrice servicePrice);
     }
 }

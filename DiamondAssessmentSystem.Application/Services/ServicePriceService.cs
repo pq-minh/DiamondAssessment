@@ -3,92 +3,71 @@ using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Application.Services
 {
     public class ServicePriceService : IServicePriceService
     {
+        private readonly IServicePriceRepository _repository;
         private readonly IMapper _mapper;
-        private readonly IServicePriceRepository _servicePriceRepository;
 
-        public ServicePriceService(IServicePriceRepository servicePriceRepository, IMapper mapper)
+        public ServicePriceService(IServicePriceRepository repository, IMapper mapper)
         {
-            _servicePriceRepository = servicePriceRepository;
+            _repository = repository;
             _mapper = mapper;
         }
 
-        // GET: api/ServicePrices
-        public async Task<IEnumerable<ServicePriceDto>> GetServicePrices()
+        public async Task<IEnumerable<ServicePriceDto>> GetAllAsync()
         {
-            var servicePrices = await _servicePriceRepository.GetServicePricesAsync();
-            var result = _mapper.Map<IEnumerable<ServicePriceDto>>(servicePrices);
-            return result;
+            var entities = await _repository.GetAllAsync();
+            return _mapper.Map<IEnumerable<ServicePriceDto>>(entities);
         }
 
-        public async Task<IEnumerable<ServicePriceDto>> GetServicePrices(string status)
+        public async Task<IEnumerable<ServicePriceDto>> GetByStatusAsync(string status)
         {
-            var servicePrices = await _servicePriceRepository.GetServicePrices(status);
-            var result = _mapper.Map<IEnumerable<ServicePriceDto>>(servicePrices);
-            return result;
+            var entities = await _repository.GetByStatusAsync(status);
+            return _mapper.Map<IEnumerable<ServicePriceDto>>(entities);
         }
 
-        // GET: api/ServicePrices/{id}
-        public async Task<ServicePriceDto?> GetServicePrice(int id)
+        public async Task<ServicePriceDto?> GetByIdAsync(int id)
         {
-            var servicePrice = await _servicePriceRepository.GetServicePriceByIdAsync(id);
-
-            if (servicePrice == null)
-            {
-                return null;
-            }
-
-            var result = _mapper.Map<ServicePriceDto>(servicePrice);
-            return result;
+            var entity = await _repository.GetByIdAsync(id);
+            return entity == null ? null : _mapper.Map<ServicePriceDto>(entity);
         }
 
-        // POST: api/ServicePrices
-        public async Task<ServicePriceDto> PostServicePrice(ServicePriceCreateDto servicePriceCreateDto)
+        public async Task<ServicePriceDto> CreateAsync(ServicePriceCreateDto dto)
         {
-            var servicePrice = _mapper.Map<ServicePrice>(servicePriceCreateDto);
-
-            var createdServicePrice = await _servicePriceRepository.CreateServicePriceAsync(servicePrice);
-
-            var createdServicePriceDto = _mapper.Map<ServicePriceDto>(createdServicePrice);
-            return createdServicePriceDto;
+            var entity = _mapper.Map<ServicePrice>(dto);
+            var created = await _repository.AddAsync(entity);
+            return _mapper.Map<ServicePriceDto>(created);
         }
 
-        // PUT: api/ServicePrices/{id}
-        public async Task<bool> UpdateServicePrice(int id, ServicePriceCreateDto servicePriceCreateDto)
+        public async Task<bool> UpdateAsync(int id, ServicePriceCreateDto dto)
         {
-            var existingServicePrice = await _servicePriceRepository.GetServicePriceByIdAsync(id);
-
-            if (existingServicePrice == null)
-            {
+            var existing = await _repository.GetByIdAsync(id);
+            if (existing == null)
                 return false;
-            }
 
-            // Dùng AutoMapper để ánh xạ từ DTO vào Entity (tính đến trường hợp cần cập nhật chỉ một số trường)
-            existingServicePrice = _mapper.Map(servicePriceCreateDto, existingServicePrice);
+            // Update fields
+            existing.ServiceType = dto.ServiceType;
+            existing.Price = dto.Price;
+            existing.Duration = dto.Duration;
+            existing.EmployeeId = dto.EmployeeId;
+            existing.Status = dto.Status;
 
-            var updated = await _servicePriceRepository.UpdateServicePriceAsync(existingServicePrice);
-
-            return updated;
+            return await _repository.UpdateAsync(existing);
         }
 
-        // DELETE: api/ServicePrices/{id}
-        public async Task<bool> DeleteServicePrice(int id)
+        public async Task<bool> SoftDeleteAsync(int id)
         {
-            var existingServicePrice = await _servicePriceRepository.GetServicePriceByIdAsync(id);
-
-            if (existingServicePrice == null)
-            {
+            var existing = await _repository.GetByIdAsync(id);
+            if (existing == null)
                 return false;
-            }
 
-            existingServicePrice.Status = "InActive";
-
-            var deleted = await _servicePriceRepository.UpdateServicePriceAsync(existingServicePrice);
-            return deleted;
+            existing.Status = "Inactive";
+            return await _repository.UpdateAsync(existing);
         }
     }
 }

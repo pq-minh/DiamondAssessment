@@ -1,10 +1,6 @@
 ﻿using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Infrastructure.Repository
@@ -18,48 +14,24 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<bool> UpdatePayment(string userId, string? status, string? method)
+        public async Task<Payment?> GetPaymentByOrderId(int orderId)
         {
-            var customerId = await GetCustomerId(userId);
+            return await _context.Payments
+                .FirstOrDefaultAsync(p => p.OrderId == orderId);
+        }
 
-            if (status == null || customerId <= 0)
-            {
-                return false;
-            }
-
-            var order = await _context.Orders.Where(od => od.CustomerId == customerId).OrderByDescending(od => od.OrderDate).FirstOrDefaultAsync();
-
-            if (order == null)
-            {
-                return false;
-            }
-
-            var payment = await _context.Payments
-                .FirstOrDefaultAsync(p => p.OrderId == order.OrderId);
-
-            if (payment == null)
-            {
-                return false;
-            }
-
-            payment.Status = status;
-            payment.Method = method;
-
-            _context.Payments.Update(payment);
+        public async Task<bool> CreatePayment(Payment payment)
+        {
+            _context.Payments.Add(payment);
             await _context.SaveChangesAsync();
             return true;
         }
 
-        private async Task<int> GetCustomerId(string userId)
+        public async Task<bool> UpdatePayment(Payment payment)
         {
-            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserId == userId);
-
-            if (customer == null)
-            {
-                return -1;
-            }
-
-            return customer.CustomerId;
+            _context.Payments.Update(payment);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

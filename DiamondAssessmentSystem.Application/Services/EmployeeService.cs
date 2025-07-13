@@ -21,25 +21,29 @@ namespace DiamondAssessmentSystem.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<EmployeeDto?> GetEmployee(string userId)
+        public async Task<EmployeeDto?> GetEmployees(string userId)
         {
+            if (string.IsNullOrWhiteSpace(userId))
+                return null;
+
             var employee = await _employeeRepository.GetEmployeeByIdAsync(userId);
-            return employee == null ? null : _mapper.Map<EmployeeDto>(employee); 
+
+            return employee == null ? null : _mapper.Map<EmployeeDto>(employee);
         }
 
-        public async Task<bool> PutEmployee(int id, EmployeeDto employeeDto)
+        public async Task<bool> UpdateEmployee(string userId, EmployeeDto employeeDto)
         {
-            if (id == null)
-            {
+            if (string.IsNullOrWhiteSpace(userId) || employeeDto == null)
                 return false;
-            }
 
-            var employee = _mapper.Map<Employee>(employeeDto); 
+            var existingEmployee = await _employeeRepository.GetEmployeeByIdAsync(userId);
 
-            var updated = await _employeeRepository.UpdateEmployeeAsync(employee);
+            if (existingEmployee == null)
+                return false;
 
-            return updated; 
+            _mapper.Map(employeeDto, existingEmployee);
+
+            return await _employeeRepository.UpdateEmployeeAsync(existingEmployee);
         }
-
     }
 }

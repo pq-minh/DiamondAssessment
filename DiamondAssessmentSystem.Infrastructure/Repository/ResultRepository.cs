@@ -23,6 +23,15 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                                          .ToListAsync();
         }
 
+        public async Task<IEnumerable<Result>> GetResultsAsync(int customerId)
+        {
+            return await _context.Results
+              .Include(r => r.Request).ThenInclude(r => r.Employee)
+              .Include(r => r.Certificates)
+              .Where(r => r.Request.CustomerId == customerId)
+              .ToListAsync();
+        }
+
         public async Task<IEnumerable<Result>> GetPersonalResults(string userId)
         {
             var customerId = await GetCustomerId(userId);
@@ -32,10 +41,11 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 return Enumerable.Empty<Result>();
             }
 
-            return await _context.Results.Include(r => r.Request)
-                                         .ThenInclude(r => r.Employee)
-                                         .Include(r => r.Certificates)
-                                         .ToListAsync();
+            return await _context.Results
+              .Include(r => r.Request).ThenInclude(r => r.Employee)
+              .Include(r => r.Certificates)
+              .Where(r => r.Request.CustomerId == customerId)  
+              .ToListAsync();
         }
 
         public async Task<Result?> GetResultByIdAsync(int id)

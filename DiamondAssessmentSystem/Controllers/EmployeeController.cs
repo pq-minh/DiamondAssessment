@@ -5,8 +5,8 @@ using DiamondAssessmentSystem.Application.DTO;
 namespace DiamondAssessmentSystem.Controllers
 {
     [Route("api/[controller]")]
-    //[Authorize(Roles = "Assement")]
     [ApiController]
+    // [Authorize(Roles = "Assessment")]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
@@ -18,40 +18,44 @@ namespace DiamondAssessmentSystem.Controllers
             _currentUser = currentUser;
         }
 
-        // GET: api/Employee/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetEmployee()
+        // GET api/employee
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyEmployee()
         {
             var userId = _currentUser.UserId;
-
-            if (userId == null)
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var employee = await _employeeService.GetEmployee(userId);
-
+            var employee = await _employeeService.GetEmployees(userId);
             if (employee == null)
-            {
                 return NotFound();
-            }
 
             return Ok(employee);
         }
 
-        // PUT: api/Employee/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmployee(int id, EmployeeDto employeeDto)
+        // PUT api/employee/me
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateMyEmployee([FromBody] EmployeeDto employeeDto)
         {
-            if (id == null)
-            {
-                return BadRequest("Employee ID mismatch.");
-            }
+            var userId = _currentUser.UserId;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-            var updated = await _employeeService.PutEmployee(id, employeeDto);
-
+            var updated = await _employeeService.UpdateEmployee(userId, employeeDto);
             if (!updated)
-            {
                 return NotFound();
-            }
+
+            return NoContent();
+        }
+
+        // PUT api/employee/{userId}
+        [HttpPut("{userId}")]
+        // [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateEmployee(string userId, [FromBody] EmployeeDto employeeDto)
+        {
+            var updated = await _employeeService.UpdateEmployee(userId, employeeDto);
+            if (!updated)
+                return NotFound();
 
             return NoContent();
         }

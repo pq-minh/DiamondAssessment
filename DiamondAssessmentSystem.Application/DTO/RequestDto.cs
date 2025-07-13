@@ -1,5 +1,6 @@
 ﻿
 using DiamondAssessmentSystem.Infrastructure.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace DiamondAssessmentSystem.Application.DTO
 {
@@ -17,8 +18,10 @@ namespace DiamondAssessmentSystem.Application.DTO
 
     public class RequestCreateDto
     {
+        [Required]
         public int ServiceId { get; set; }
 
+        [MaxLength(50)]
         public string? RequestType { get; set; }
 
         public int? EmployeeId { get; set; }

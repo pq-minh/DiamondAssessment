@@ -17,13 +17,14 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
 
         public async Task<Employee?> GetEmployeeByIdAsync(string userId)
         {
-            return await _context.Employees.Include(e => e.User).FirstOrDefaultAsync(e => e.UserId == userId);
+            return await _context.Employees
+                .Include(e => e.User)
+                .FirstOrDefaultAsync(e => e.UserId == userId);
         }
 
         public async Task<bool> UpdateEmployeeAsync(Employee employee)
         {
             _context.Entry(employee).State = EntityState.Modified;
-
             try
             {
                 await _context.SaveChangesAsync();
@@ -32,14 +33,12 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             catch (DbUpdateConcurrencyException)
             {
                 if (!await EmployeeExistsAsync(employee.EmployeeId))
-                {
                     return false;
-                }
+
                 throw;
             }
         }
 
-        // Kiểm tra xem nhân viên có tồn tại hay không
         private async Task<bool> EmployeeExistsAsync(int id)
         {
             return await _context.Employees.AnyAsync(e => e.EmployeeId == id);

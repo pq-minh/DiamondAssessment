@@ -13,14 +13,12 @@ namespace DiamondAssessmentSystem.Application.Services
         private readonly IBlogRepository _blogRepository;
         private readonly IMapper _mapper;
 
-        // Constructor
         public BlogService(IBlogRepository blogRepository, IMapper mapper)
         {
             _blogRepository = blogRepository;
             _mapper = mapper;
         }
 
-        // Get all blogs
         public async Task<IEnumerable<BlogDto>> GetBlogs()
         {
             var blogs = await _blogRepository.GetBlogsAsync();
@@ -28,7 +26,6 @@ namespace DiamondAssessmentSystem.Application.Services
             return blogDtos;
         }
 
-        // Get a specific blog by Id
         public async Task<BlogDto> GetBlogById(int id)
         {
             var blog = await _blogRepository.GetBlogByIdAsync(id);
@@ -41,23 +38,29 @@ namespace DiamondAssessmentSystem.Application.Services
             return blogDto;
         }
 
-        // Create a new blog
         public async Task<BlogDto> CreateBlog(string userId, BlogDto blogDto)
         {
-            // Map BlogDto to Blog entity
+            if (string.IsNullOrWhiteSpace(blogDto.Status))
+            {
+                blogDto.Status = "Draft";
+            }
+
             var blog = _mapper.Map<Blog>(blogDto);
 
             var createdBlog = await _blogRepository.CreateBlogAsync(userId, blog);
 
-            // Map the created Blog entity back to BlogDto
             var createdBlogDto = _mapper.Map<BlogDto>(createdBlog);
 
             return createdBlogDto;
         }
 
-        // Update an existing blog
         public async Task<bool> UpdateBlog(string userId, BlogDto blogDto)
         {
+            if (string.IsNullOrWhiteSpace(blogDto.Status))
+            {
+                blogDto.Status = "Draft";
+            }
+
             var blog = _mapper.Map<Blog>(blogDto);
 
             var updated = await _blogRepository.UpdateBlogAsync(userId, blog);
@@ -65,15 +68,18 @@ namespace DiamondAssessmentSystem.Application.Services
             return updated;
         }
 
-        // Delete a blog
         public async Task<bool> DeleteBlog(string userId, BlogDto blogDto)
         {
-            var blog = _mapper.Map<Blog>(blogDto);
+            var existingBlog = await _blogRepository.GetBlogByIdAsync(blogDto.BlogId);
+            if (existingBlog == null)
+            {
+                return false;
+            }
 
-            blog.Status = "InActive";
+            existingBlog.Status = "InActive";
+            existingBlog.UpdatedDate = DateTime.UtcNow;
 
-            var deleted = await _blogRepository.UpdateBlogAsync(userId, blog);
-            return deleted;  // Return true if the blog was deleted, otherwise false
+            return await _blogRepository.UpdateBlogAsync(userId, existingBlog);
         }
     }
 }

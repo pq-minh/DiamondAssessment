@@ -1,6 +1,5 @@
 ﻿using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
-using DiamondAssessmentSystem.Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -20,102 +19,100 @@ namespace DiamondAssessmentSystem.Controllers
             _currentUser = currentUser;
         }
 
-        //[Authorize(Roles = "Manager")]
-        [HttpGet("All")]
-        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders()
+        // GET: api/order
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetCustomerOrders()
+        {
+            var userId = _currentUser.UserId;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var orders = await _orderService.GetOrdersByCustomerAsync(userId);
+            return Ok(orders);
+        }
+
+        // GET: api/order/all
+        [HttpGet("all")]
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetAllOrders()
         {
             var orders = await _orderService.GetOrdersAsync();
             return Ok(orders);
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrderByCustomers()
-        {
-            var userIdClaim = _currentUser.UserId;
-
-            if (userIdClaim == null)
-                return Unauthorized();
-
-            var orders = await _orderService.GetOrdersByCustomers(userIdClaim);
-            return Ok(orders);
-        }
-
+        // GET: api/order/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrderDto>> GetOrder(int id)
+        public async Task<ActionResult<OrderDto>> GetOrderById(int id)
         {
             var order = await _orderService.GetOrderByIdAsync(id);
             if (order == null)
-            {
                 return NotFound();
-            }
 
             return Ok(order);
         }
 
+        // POST: api/order
         [HttpPost]
-        public async Task<ActionResult<OrderDto>> CreateOrder([FromBody] orderCreateCombine order)
+        public async Task<IActionResult> CreateOrder([FromBody] OrderCreateCombineDto order)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var userId = _currentUser.UserId;
-
-            if (userId == null)
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var requestId = order.orderPaymentDto.requestId;
-            var paymentType = order.orderPaymentDto.paymentType;
-            var request = order.orderPaymentDto.request;
-            var orderCreateDto = order.OrderCreateDto;
+            var created = await _orderService.CreateOrderAsync(
+                userId,
+                order.PaymentInfo.RequestId,
+                order.OrderData,
+                order.PaymentInfo.PaymentType,
+                order.PaymentInfo.PaymentRequest);
 
-            var createdOrder = await _orderService.CreateOrder(userId, requestId, orderCreateDto, paymentType, request);
+            if (!created)
+                return BadRequest("Could not create order.");
 
-            if (createdOrder)
-            {
-                return NoContent();
-            }
-            else
-            {
-                return BadRequest();
-            }
-
+            return NoContent();
         }
 
+        // PUT: api/order/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateOrder(int id, OrderCreateDto orderCreateDto)
+        public async Task<IActionResult> UpdateOrder(int id, [FromBody] OrderCreateDto orderDto)
         {
-            var updated = await _orderService.UpdateOrderAsync(id, orderCreateDto);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updated = await _orderService.UpdateOrderAsync(id, orderDto);
             if (!updated)
-            {
                 return NotFound();
-            }
 
             return NoContent();
         }
 
+        // DELETE: api/order/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteOrder(int id)
+        public async Task<IActionResult> CancelOrder(int id)
         {
-            var deleted = await _orderService.DeleteOrderAsync(id);
-            if (!deleted)
-            {
+            var canceled = await _orderService.CancelOrderAsync(id);
+            if (!canceled)
                 return NotFound();
-            }
 
             return NoContent();
         }
 
-        [HttpPut("Payment")]
-        public async Task<IActionResult> UpdatePayment(int orderId, string status)
+        // PUT: api/order/payment
+        [HttpPut("payment")]
+        public async Task<IActionResult> UpdatePayment([FromBody] UpdatePaymentDto paymentDto)
         {
-            var userIdClaim = _currentUser.UserId;
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            if (userIdClaim == null)
+            var userId = _currentUser.UserId;
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var updated = await _orderService.UpdatePayment(userIdClaim, orderId, status);
-
+            var updated = await _orderService.UpdatePaymentAsync(userId, paymentDto.OrderId, paymentDto.Status);
             if (!updated)
-            {
                 return BadRequest();
-            }
 
             return NoContent();
         }

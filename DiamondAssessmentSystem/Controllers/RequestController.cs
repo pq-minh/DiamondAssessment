@@ -1,9 +1,7 @@
-﻿    using DiamondAssessmentSystem.Application.DTO;
+﻿using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Controllers
@@ -22,82 +20,95 @@ namespace DiamondAssessmentSystem.Controllers
         }
 
         // GET: api/request
-        //[Authorize(Roles = "Consultant")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RequestDto>>> GetRequests()
+        public async Task<ActionResult<IEnumerable<RequestDto>>> GetAllRequests()
         {
-            var requests = await _requestService.GetFormsAsync();
+            var requests = await _requestService.GetRequestsAsync();
             return Ok(requests);
         }
 
         // GET: api/request/{id}
-        //[Authorize(Roles = "Consultant")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<RequestDto>> GetRequest(int id)
+        public async Task<ActionResult<RequestDto>> GetRequestById(int id)
         {
-            var request = await _requestService.GetFormByIdAsync(id);
+            var request = await _requestService.GetRequestByIdAsync(id);
             if (request == null)
                 return NotFound();
 
             return Ok(request);
         }
 
-        // GET: api/request/my-requests
-        [HttpGet("my-requests")]
-        public async Task<ActionResult<IEnumerable<RequestDto>>> GetCustomerRequests()
+        // GET: api/request/my
+        [HttpGet("my")]
+        public async Task<ActionResult<IEnumerable<RequestDto>>> GetMyRequests()
         {
-            var userIdClaim = _currentUser.UserId;
-
-            if (userIdClaim == null)
+            var userId = _currentUser.UserId;
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var requests = await _requestService.GetRequestsByCustomerIdAsync(userIdClaim);
+            var requests = await _requestService.GetRequestsByCustomerIdAsync(userId);
             return Ok(requests);
         }
 
-        // POST: api/request
-        //[HttpPost]
-        //public async Task<ActionResult<RequestDto>> CreateRequest(RequestCreateDto createDto)
-        //{
-        //    var created = await _requestService.CreateFormAsync(createDto);
-        //    return CreatedAtAction(nameof(GetRequest), new { id = created.FormId }, created);
-        //}
-
         // POST: api/request/draft
-        [HttpPost]
-        public async Task<ActionResult<RequestDto>> CreateDraftRequest(RequestCreateDto draftDto)
+        [HttpPost("draft")]
+        public async Task<ActionResult<RequestDto>> CreateDraft([FromBody] RequestCreateDto draftDto)
         {
-            var userIdClaim = _currentUser.UserId;
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            if (userIdClaim == null)
+            var userId = _currentUser.UserId;
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var draft = await _requestService.CreateDraftRequestAsync(userIdClaim, draftDto);
-            return Ok(draft);
+            var created = await _requestService.CreateRequestForCustomerAsync(userId, draftDto, "Draft");
+            if (created == null)
+                return BadRequest("Could not create draft request.");
+
+            return CreatedAtAction(nameof(GetRequestById), new { id = created.RequestId }, created);
+        }
+
+        // POST: api/request/submit
+        [HttpPost("submit")]
+        public async Task<ActionResult<RequestDto>> CreateRequest([FromBody] RequestCreateDto createDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = _currentUser.UserId;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var created = await _requestService.CreateRequestForCustomerAsync(userId, createDto, "Pending");
+            if (created == null)
+                return BadRequest("Could not create request.");
+
+            return CreatedAtAction(nameof(GetRequestById), new { id = created.RequestId }, created);
         }
 
         // POST: api/request/{id}/cancel
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> CancelRequest(int id)
         {
-            var userIdClaim = _currentUser.UserId;
-
-            if (userIdClaim == null)
+            var userId = _currentUser.UserId;
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var success = await _requestService.CancelRequest(userIdClaim, id);
+            var success = await _requestService.CancelRequestAsync(userId, id);
             if (!success)
-                return BadRequest("Cancellation is only possible when the request is in 'Draft' status.");
+                return BadRequest("Cancellation is only allowed for 'Draft' status.");
 
             return Ok();
         }
 
         // PUT: api/request/{id}
-        //[Authorize(Roles = "Consultant")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRequest(int id, RequestCreateDto updateDto)
+        public async Task<IActionResult> UpdateRequest(int id, [FromBody] RequestCreateDto updateDto)
         {
-            var updated = await _requestService.UpdateFormAsync(id, updateDto);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updated = await _requestService.UpdateRequestAsync(id, updateDto);
             if (!updated)
                 return NotFound();
 

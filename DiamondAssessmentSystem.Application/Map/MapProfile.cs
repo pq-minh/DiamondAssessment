@@ -108,6 +108,12 @@ namespace DiamondAssessmentSystem.Application.Map
                 .ForMember(dest => dest.UnitName, opt => opt.MapFrom(src => src.UnitName))
                 .ForMember(dest => dest.TaxCode, opt => opt.MapFrom(src => src.TaxCode));
 
+            //CreateMap<Employee, EmployeeDto>()
+            //    .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
+            //    .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
+            //    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+            //    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.User.PhoneNumber))
+            //    .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User.Gender));
             CreateMap<Employee, EmployeeDto>()
                 .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
@@ -115,10 +121,17 @@ namespace DiamondAssessmentSystem.Application.Map
                 .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.User.PhoneNumber))
                 .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User.Gender));
 
+            CreateMap<EmployeeDto, Employee>()
+                .ForMember(dest => dest.User, opt => opt.Ignore());
+
             CreateMap<Certificate, CertificateDto>().ReverseMap();
             CreateMap<Certificate, CertificateCreateDto>().ReverseMap();
 
-            CreateMap<Blog, BlogDto>().ReverseMap();
+            CreateMap<BlogDto, Blog>()
+    .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => string.IsNullOrWhiteSpace(src.Status) ? "Draft" : src.Status));
+
+            CreateMap<Blog, BlogDto>();
 
             CreateMap<Conversation, ConversationDTO>();
 

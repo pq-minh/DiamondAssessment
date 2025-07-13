@@ -2,6 +2,7 @@
 using DiamondAssessmentSystem.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DiamondAssessmentSystem.Infrastructure.Repository
@@ -15,27 +16,31 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<Order>> GetOrders()
+        public async Task<IEnumerable<Order>> GetOrdersAsync()
         {
             return await _context.Orders
-                .Include(o => o.Customer)       
+                .Include(o => o.Customer)
                 .Include(o => o.Payments)
                 .Include(o => o.Service)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Order>> GetOrdersByCustomers(string userId)
+        public async Task<IEnumerable<Order>> GetOrdersByCustomerAsync(string userId)
         {
-            var customerId = await GetCustomerId(userId);
+            var customerId = await GetCustomerIdAsync(userId);
+            if (customerId == -1)
+                return Enumerable.Empty<Order>();
 
             return await _context.Orders
-                .Include(o => o.Customer.CustomerId == customerId)
+                .Where(o => o.CustomerId == customerId)
+                .Include(o => o.Customer)
                 .Include(o => o.Payments)
                 .Include(o => o.Service)
+                .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
         }
 
-        public async Task<Order?> GetOrderById(int id)
+        public async Task<Order?> GetOrderByIdAsync(int id)
         {
             return await _context.Orders
                 .Include(o => o.Customer)
@@ -44,34 +49,12 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 .FirstOrDefaultAsync(o => o.OrderId == id);
         }
 
-        public async Task<int> GetCurentOrderId(string? userId)
-        {
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-            
-            if (customer == null)
-            {
-                return -1;
-            }
-
-            var order = await _context.Orders.Where(od => od.CustomerId == customer.CustomerId).OrderByDescending(od => od.OrderDate).FirstOrDefaultAsync();
-            int orderId = 0;
-
-            if (order != null)
-            {
-                orderId = order.OrderId;
-                if (orderId <= 0)
-                {
-                    orderId = 0;
-                }
-            }
-
-            var orderIdNext = orderId += 1;
-            return orderIdNext;
-        }
-
         public async Task<bool> CreateOrderAsync(string userId, Order order)
         {
-            var customerId = await GetCustomerId(userId);
+            var customerId = await GetCustomerIdAsync(userId);
+            if (customerId == -1)
+                return false;
+
             order.CustomerId = customerId;
 
             _context.Orders.Add(order);
@@ -90,21 +73,16 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             catch (DbUpdateConcurrencyException)
             {
                 if (!await OrderExistsAsync(order.OrderId))
-                {
                     return false;
-                }
                 throw;
             }
         }
 
-        public async Task<bool> DeleteOrder(int id)
+        public async Task<bool> CancelOrderAsync(int id)
         {
             var order = await _context.Orders.FindAsync(id);
-
             if (order == null)
-            {
                 return false;
-            }
 
             order.Status = "Canceled";
             _context.Orders.Update(order);
@@ -112,21 +90,15 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return true;
         }
 
+        private async Task<int> GetCustomerIdAsync(string userId)
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserId == userId);
+            return customer?.CustomerId ?? -1;
+        }
+
         private async Task<bool> OrderExistsAsync(int id)
         {
             return await _context.Orders.AnyAsync(e => e.OrderId == id);
-        }
-
-        private async Task<int> GetCustomerId(string userId)
-        {
-            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserId == userId);
-
-            if (customer == null)
-            {
-                return -1;
-            }
-
-            return customer.CustomerId;
         }
     }
 }

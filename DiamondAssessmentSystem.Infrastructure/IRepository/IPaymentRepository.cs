@@ -9,6 +9,8 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
 {
     public interface IPaymentRepository
     {
-        Task<bool> UpdatePayment(string userId, string? status, string? method);
+        Task<Payment?> GetPaymentByOrderId(int orderId);
+        Task<bool> CreatePayment(Payment payment);
+        Task<bool> UpdatePayment(Payment payment);
     }
 }

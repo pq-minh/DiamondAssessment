@@ -20,8 +20,7 @@ namespace DiamondAssessmentSystem.Controllers
             _currentUser = currentUser;
         }
 
-        // GET: api/Customer/5
-        [HttpGet("{id}")]
+        [HttpGet("me")]
         public async Task<ActionResult<CustomerDto>> GetCustomer()
         {
             var userIdClaim = _currentUser.UserId;
@@ -38,9 +37,8 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(customer);
         }
 
-        // PUT: api/Customer/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCustomer(CustomerCreateDto customerCreateDto)
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateCustomer(CustomerCreateDto customerCreateDto)
         {
             var userId = _currentUser.UserId;
 
