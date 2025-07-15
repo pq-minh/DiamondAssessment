@@ -13,9 +13,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly DiamondAssessmentDbContext _context;
 
-        public UserRepository(UserManager<User> userManager,
-                                 RoleManager<IdentityRole> roleManager,
-                                 DiamondAssessmentDbContext context)
+        public UserRepository(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, DiamondAssessmentDbContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;

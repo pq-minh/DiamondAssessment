@@ -40,35 +40,22 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(accountDto);
         }
 
-        [HttpPost("RegisterEmployee")]
-        public async Task<IActionResult> RegisterEmployee([FromBody] RegisterEmployeesDto registerDto)
+        [HttpPost("RegisterStaff")]
+        public async Task<IActionResult> CreateStaff([FromBody] RegisterStaffDto dto)
         {
-            var role = registerDto.Role;
+            if (string.IsNullOrEmpty(dto.Role) ||
+                (dto.Role != "Employee" && dto.Role != "Manager" && dto.Role != "Admin"))
+                return BadRequest("Role must be Employee, Manager, or Admin.");
 
-            if (string.IsNullOrEmpty(role))
-                return BadRequest("Roles cannot be left empty.");
-
-            try
-            {
-                var account = await _accountService.CreateEmployeeAsync(registerDto, role);
-                return CreatedAtAction(nameof(RegisterEmployee), account);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var account = await _accountService.CreateEmployeeOrManagerAsync(dto);
+            return CreatedAtAction(nameof(GetAccountById), new { id = account.UserId }, account);
         }
 
         // PUT: api/Account/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAccount(string id, AccountDto accountDto)
+        public async Task<IActionResult> UpdateAccount(string id, UpdateAccountDto updateDto)
         {
-            if (id != accountDto.UserId)
-            {
-                return BadRequest("User ID mismatch.");
-            }
-
-            var updated = await _accountService.UpdateAccountAsync(id, accountDto);
+            var updated = await _accountService.UpdateAccountAsync(id, updateDto);
 
             if (!updated)
             {

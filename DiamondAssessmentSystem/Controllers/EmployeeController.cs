@@ -18,42 +18,64 @@ namespace DiamondAssessmentSystem.Controllers
             _currentUser = currentUser;
         }
 
-        // GET: api/Employee/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetEmployee()
+        // GET: api/Employee/by-user/{userId}
+        [HttpGet("userId/{userId}")]
+        public async Task<IActionResult> GetEmployeeByUserId(string userId)
         {
-            var userId = _currentUser.UserId;
-
-            if (userId == null)
-                return Unauthorized();
-
-            var employee = await _employeeService.GetEmployee(userId);
-
+            var employee = await _employeeService.GetEmployeeByUserIdAsync(userId);
             if (employee == null)
-            {
                 return NotFound();
-            }
 
             return Ok(employee);
         }
 
-        // PUT: api/Employee/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmployee(int id, EmployeeDto employeeDto)
+        // GET: api/Employee/{employeeId}
+        [HttpGet("{employeeId}")]
+        public async Task<IActionResult> GetEmployeeById(int employeeId)
         {
-            if (id == null)
-            {
-                return BadRequest("Employee ID mismatch.");
-            }
-
-            var updated = await _employeeService.PutEmployee(id, employeeDto);
-
-            if (!updated)
-            {
+            var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
+            if (employee == null)
                 return NotFound();
-            }
 
-            return NoContent();
+            return Ok(employee);
+        }
+
+        [HttpPut("{employeeId}/assign-role")]
+        public async Task<IActionResult> AssignStaffRole(int employeeId, [FromBody] string newRole)
+        {
+            var result = await _employeeService.AssignStaffRoleAsync(employeeId, newRole);
+            if (!result) return BadRequest("Employee not found or invalid role.");
+
+            return Ok("Role updated successfully.");
+        }
+
+        //// PUT: api/Employee/5
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutEmployee(int id, EmployeeDto employeeDto)
+        //{
+        //    if (id == null)
+        //    {
+        //        return BadRequest("Employee ID mismatch.");
+        //    }
+
+        //    var updated = await _employeeService.PutEmployee(id, employeeDto);
+
+        //    if (!updated)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return NoContent();
+        //}
+
+        //// PUT: api/Employee/5
+        [HttpPut("{employeeId}")]
+        public async Task<IActionResult> UpdateEmployee(int employeeId, [FromBody] UpdateEmployeeDto updateDto)
+        {
+            var result = await _employeeService.UpdateEmployeeAsync(employeeId, updateDto);
+            if (!result) return NotFound("Employee not found.");
+
+            return Ok("Employee updated successfully.");
         }
     }
 }

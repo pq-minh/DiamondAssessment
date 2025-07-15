@@ -15,15 +15,25 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<Employee?> GetEmployeeByIdAsync(string userId)
+        public async Task<Employee> GetEmployeeByUserIdAsync(string userId)
         {
-            return await _context.Employees.Include(e => e.User).FirstOrDefaultAsync(e => e.UserId == userId);
+            return await _context.Employees
+                .Include(e => e.User) // Để lấy thông tin user liên quan
+                .FirstOrDefaultAsync(e => e.UserId == userId);
+        }
+
+        public async Task<Employee> GetEmployeeByIdAsync(int employeeId)
+        {
+            return await _context.Employees
+                .Include(e => e.User) // Để lấy thông tin user liên quan
+                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
         }
 
         public async Task<bool> UpdateEmployeeAsync(Employee employee)
         {
-            _context.Entry(employee).State = EntityState.Modified;
-
+            //_context.Entry(employee).State = EntityState.Modified;
+            _context.Employees.Update(employee);
+            _context.Users.Update(employee.User);
             try
             {
                 await _context.SaveChangesAsync();
@@ -44,5 +54,17 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         {
             return await _context.Employees.AnyAsync(e => e.EmployeeId == id);
         }
+
+        public async Task<bool> UpdateEmployeeUserRoleAsync(int employeeId, string newRole)
+        {
+            var employee = await _context.Employees.Include(e => e.User).FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+            if (employee == null || employee.User == null) return false;
+
+            employee.User.UserType = newRole;
+            _context.Users.Update(employee.User);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

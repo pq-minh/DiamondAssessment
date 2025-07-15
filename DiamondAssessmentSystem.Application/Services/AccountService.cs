@@ -34,7 +34,9 @@ namespace DiamondAssessmentSystem.Application.Services
                 {
                     UserId = user.Id,
                     Username = user.UserName,
-                    Role = roles.FirstOrDefault() ?? "Unknown"
+                    Role = roles.FirstOrDefault() ?? "Unknown",
+                    Email = user.Email,
+                    Status = user.Status
                 });
             }
 
@@ -52,22 +54,26 @@ namespace DiamondAssessmentSystem.Application.Services
             {
                 UserId = user.Id,
                 Username = user.UserName,
-                Role = roles.FirstOrDefault() ?? "Unknown"
+                Role = roles.FirstOrDefault() ?? "Unknown",
+                Email = user.Email,
+                Status = user.Status
             };
         }
 
-        public async Task<AccountDto> CreateEmployeeAsync(RegisterEmployeesDto dto, string role)
+        //create employee or manager
+        public async Task<AccountDto> CreateEmployeeOrManagerAsync(RegisterStaffDto dto)
         {
             var newUser = _mapper.Map<User>(dto);
 
-            newUser.UserType = "Employee";
+            newUser.UserType = dto.Role;
             newUser.Status = "Active";
 
-            var result = await _userRepository.CreateEmployeeWithRoleAsync(newUser, dto.Password, role);
+            var result = await _userRepository.CreateEmployeeWithRoleAsync(newUser, dto.Password, dto.Role);
+
             if (!result.Succeeded)
             {
                 var errorMessages = string.Join("; ", result.Errors.Select(e => e.Description));
-                throw new Exception($"Unable to create staff account: {errorMessages}");
+                throw new Exception($"Unable to create account: {errorMessages}");
             }
 
             var roles = await _userRepository.GetUserRolesAsync(newUser);
@@ -76,22 +82,23 @@ namespace DiamondAssessmentSystem.Application.Services
             {
                 UserId = newUser.Id,
                 Username = newUser.UserName,
-                Role = roles.FirstOrDefault() ?? role
+                Role = roles.FirstOrDefault() ?? dto.Role,
+                Email = newUser.Email,
+                Status = newUser.Status
             };
         }
 
         // Update an existing user
-        public async Task<bool> UpdateAccountAsync(string id, AccountDto accountDto)
+        public async Task<bool> UpdateAccountAsync(string id, UpdateAccountDto updateDto)
         {
-            if (id != accountDto.UserId)
-                throw new ArgumentException("User ID mismatch.");
-
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null) return false;
 
-            user.UserName = accountDto.Username;
-            user.Email = accountDto.Email;
+            user.UserName = updateDto.Username;
+            user.Email = updateDto.Email;
 
+            if (!string.IsNullOrEmpty(updateDto.Status))
+                user.Status = updateDto.Status;
             return await _userRepository.UpdateUserAsync(user);
         }
 
@@ -103,5 +110,6 @@ namespace DiamondAssessmentSystem.Application.Services
 
             return await _userRepository.DeleteUserAsync(id);
         }
+
     }
 }
