@@ -89,7 +89,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 .ToListAsync();
         }
 
-        public async Task<Request> CreateRequestAsync(Request request)
+        public async Task<Request> AddAsync(Request request)
         {
             _context.Requests.Add(request);
             await _context.SaveChangesAsync();
@@ -133,5 +133,20 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
 
             return customer.CustomerId;
         }
+
+        public async Task<bool> DeleteAsync(Request request)
+        {
+            _context.Requests.Remove(request);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+
+        public async Task<bool> UpdateStatusAsync(Request request)
+        {
+            _context.Requests.Update(request);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+
     }
 }

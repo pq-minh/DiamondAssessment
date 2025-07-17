@@ -17,7 +17,7 @@ public partial class Request
 
     public int? EmployeeId { get; set; }
 
-    public string Status { get; set; } = null!;
+    public string Status { get; set; } = null!; //Draft, Pending, InProgress, Completed, Cancelled
 
     public virtual ICollection<ChatLog> ChatLogs { get; set; } = new List<ChatLog>();
 

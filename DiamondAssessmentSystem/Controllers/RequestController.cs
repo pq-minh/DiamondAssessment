@@ -26,7 +26,7 @@ namespace DiamondAssessmentSystem.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RequestDto>>> GetRequests()
         {
-            var requests = await _requestService.GetFormsAsync();
+            var requests = await _requestService.GetAllAsync();
             return Ok(requests);
         }
 
@@ -35,7 +35,7 @@ namespace DiamondAssessmentSystem.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<RequestDto>> GetRequest(int id)
         {
-            var request = await _requestService.GetFormByIdAsync(id);
+            var request = await _requestService.GetRequestByIdAsync(id);
             if (request == null)
                 return NotFound();
 
@@ -55,16 +55,57 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(requests);
         }
 
-        // POST: api/request
-        //[HttpPost]
-        //public async Task<ActionResult<RequestDto>> CreateRequest(RequestCreateDto createDto)
-        //{
-        //    var created = await _requestService.CreateFormAsync(createDto);
-        //    return CreatedAtAction(nameof(GetRequest), new { id = created.FormId }, created);
-        //}
+        // For Consultant to creating a draft request
+        [HttpPost("Create-request")]
+        public async Task<IActionResult> CreateRequest([FromBody] CreateRequestDto createDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        // POST: api/request/draft
-        [HttpPost]
+            var createdRequest = await _requestService.CreateRequestAsync(createDto);
+
+            return CreatedAtAction(nameof(GetRequest), new { id = createdRequest.RequestId }, createdRequest);
+        }
+
+        // PUT: api/request/{id}
+        //[Authorize(Roles = "Consultant")]
+        [HttpPut("Update-request/{id}")]
+        public async Task<IActionResult> UpdateRequest(int id, CreateRequestDto updateDto)
+        {
+            var updated = await _requestService.UpdateFormAsync(id, updateDto);
+            if (!updated)
+                return NotFound();
+
+            return NoContent();
+        }
+
+        // DELETE: api/request/Delete/{id}
+        [HttpDelete("Delete-request/{id}")]
+        public async Task<IActionResult> DeleteRequest(int id)
+        {
+            var result = await _requestService.DeleteRequestAsync(id);
+            if (!result)
+                return NotFound();
+
+            return NoContent();
+        }
+
+        // PATCH: api/request/Cancel-request/{id}
+        [HttpPatch("Cancel-request/{id}")]
+        public async Task<IActionResult> CancelRequest(int id)
+        {
+            var result = await _requestService.CancelRequestAsync(id);
+
+            if (!result)
+                return NotFound();
+
+            return Ok(new { message = "Request đã được hủy thành công." });
+        }
+
+        // Draft -----------------------------------------------------------------------------------------------------------------------------------------
+
+        // For Customer to creating a draft request
+        [HttpPost("Create-draft")]
         public async Task<ActionResult<RequestDto>> CreateDraftRequest(CreateRequestDto draftDto)
         {
             var userIdClaim = _currentUser.UserId;
@@ -76,9 +117,9 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(draft);
         }
 
-        // POST: api/request/{id}/cancel
-        [HttpPost("{id}/cancel")]
-        public async Task<IActionResult> CancelRequest(int id)
+        // POST: api/request/Cancel-Draft/{id}
+        [HttpPost("Cancel-Draft/{id}")]
+        public async Task<IActionResult> CancelDraftRequest(int id)
         {
             var userIdClaim = _currentUser.UserId;
 
@@ -92,16 +133,5 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok();
         }
 
-        // PUT: api/request/{id}
-        //[Authorize(Roles = "Consultant")]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRequest(int id, CreateRequestDto updateDto)
-        {
-            var updated = await _requestService.UpdateFormAsync(id, updateDto);
-            if (!updated)
-                return NotFound();
-
-            return NoContent();
-        }
     }
 }
