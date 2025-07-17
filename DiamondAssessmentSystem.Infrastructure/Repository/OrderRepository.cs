@@ -27,6 +27,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         public async Task<IEnumerable<Order>> GetOrdersByCustomers(int customerId)
         {
             return await _context.Orders
+                .Where(o => o.CustomerId == customerId)
                 .Include(o => o.Customer)
                 .Include(o => o.Payments)
                 .Include(o => o.Service)
@@ -45,7 +46,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         public async Task<int> GetCurentOrderId(string userId)
         {
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-            
+
             if (customer == null)
             {
                 return -1;
@@ -90,6 +91,16 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 }
                 throw;
             }
+        }
+
+        public async Task<bool> UpdateOrderStatusAsync(int id, string status)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null) return false;
+
+            order.Status = status;
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> DeleteOrderAsync(int id)

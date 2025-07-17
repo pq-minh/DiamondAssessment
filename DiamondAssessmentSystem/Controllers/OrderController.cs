@@ -1,5 +1,6 @@
 ﻿using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,23 +12,27 @@ namespace DiamondAssessmentSystem.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly ICurrentUserService _currentUser;
 
-        public OrderController(IOrderService orderService)
+        public OrderController(IOrderService orderService, ICurrentUserService currentUser)
         {
             _orderService = orderService;
+            _currentUser = currentUser;
         }
 
         // GET: api/Order
         [HttpGet]
+        //[Authorize(Roles = "Admin,Consultant")]
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders()
         {
             var orders = await _orderService.GetOrdersAsync();
             return Ok(orders);
         }
 
-        // GET: api/Order/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<OrderDto>> GetOrder(int id)
+        // GET: api/Order/{id}
+        [HttpGet("GetById/{id}")]
+        //[Authorize(Roles = "Admin,Consultant")]
+        public async Task<ActionResult<OrderDto>> GetOrderById(int id)
         {
             var order = await _orderService.GetOrderByIdAsync(id);
             if (order == null)
@@ -39,28 +44,36 @@ namespace DiamondAssessmentSystem.Controllers
         }
 
         // POST: api/Order
-        [HttpPost]
-        public async Task<ActionResult<OrderDto>> PostOrder(OrderCreateDto orderCreateDto)
+        [HttpPost("Create-order")]
+        public async Task<ActionResult<OrderDto>> CreateOrder(OrderCreateDto orderCreateDto)
         {
             var createdOrder = await _orderService.CreateOrderAsync(orderCreateDto);
-            return CreatedAtAction(nameof(GetOrder), new { id = createdOrder.OrderId }, createdOrder);
+            return CreatedAtAction(nameof(GetOrderById), new { id = createdOrder.OrderId }, createdOrder);
         }
 
-        // PUT: api/Order/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutOrder(int id, OrderCreateDto orderCreateDto)
-        {
-            var updated = await _orderService.UpdateOrderAsync(id, orderCreateDto);
-            if (!updated)
-            {
-                return NotFound();
-            }
+        //// PUT: api/Order/5
+        //[HttpPut("Update-order/{id}")]
+        //public async Task<IActionResult> UpdateOrder(int id, OrderCreateDto orderCreateDto)
+        //{
+        //    var updated = await _orderService.UpdateOrderAsync(id, orderCreateDto);
+        //    if (!updated)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return NoContent();
+        //    return NoContent();
+        }
+
+        [HttpPatch("{id}/status")]
+        //[Authorize(Roles = "Admin,Consultant")]
+        public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] string status)
+        {
+            var result = await _orderService.UpdateOrderStatusAsync(id, status);
+            return result ? Ok() : NotFound();
         }
 
         // DELETE: api/Order/5
-        [HttpDelete("{id}")]
+        [HttpDelete("Delete-order/{id}")]
         public async Task<IActionResult> DeleteOrder(int id)
         {
             var deleted = await _orderService.DeleteOrderAsync(id);

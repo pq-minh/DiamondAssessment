@@ -3,6 +3,7 @@ using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
+using DiamondAssessmentSystem.Infrastructure.Repository;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,21 +13,37 @@ namespace DiamondAssessmentSystem.Application.Services
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
+        private readonly IRequestRepository _requestRepository;
+        private readonly IServicePriceRepository _servicePriceRepository;
         private readonly ICurrentUserService _currentUser;
         private readonly IMapper _mapper;
 
-        public OrderService(IOrderRepository orderRepository, IMapper mapper, ICurrentUserService currentUser)
+        public OrderService(IOrderRepository orderRepository, IRequestRepository requestRepository, IServicePriceRepository servicePriceRepository, IMapper mapper, ICurrentUserService currentUser)
         {
             _orderRepository = orderRepository;
-            _currentUser = currentUser;
+            _requestRepository = requestRepository;
+            _servicePriceRepository = servicePriceRepository;
             _mapper = mapper;
+            _currentUser = currentUser;
         }
 
-        // GET: api/Order
+
         public async Task<IEnumerable<OrderDto>> GetOrdersAsync()
         {
             var orders = await _orderRepository.GetOrdersAsync();
-            return _mapper.Map<IEnumerable<OrderDto>>(orders); // Ánh xạ từ Order sang OrderDto
+
+            var servicePrices = await _servicePriceRepository.GetServicePricesAsync();
+
+            var orderDtos = _mapper.Map<IEnumerable<OrderDto>>(orders).ToList();
+
+            foreach (var dto in orderDtos)
+            {
+                var service = servicePrices.FirstOrDefault(x => x.ServiceId == dto.ServiceId);
+                dto.ServiceType = service?.ServiceType;
+            }
+
+            return orderDtos;
+            //return _mapper.Map<IEnumerable<OrderDto>>(orders);
         }
 
         // GET: api/Order/5
@@ -36,10 +53,17 @@ namespace DiamondAssessmentSystem.Application.Services
 
             if (order == null)
             {
-                return null; // Trả về null nếu không tìm thấy Order
+                return null;
             }
 
-            return _mapper.Map<OrderDto>(order); // Ánh xạ từ Order sang OrderDto
+            var service = await _servicePriceRepository.GetServicePriceByIdAsync(order.ServiceId);
+
+            var orderDto = _mapper.Map<OrderDto>(order);
+            orderDto.ServiceType = service?.ServiceType;
+
+            return orderDto;
+
+            //return _mapper.Map<OrderDto>(order);
         }
 
         public async Task<int> GetCurentOrderId()
@@ -48,69 +72,65 @@ namespace DiamondAssessmentSystem.Application.Services
             return orderId;
         }
 
-        // POST: api/Order
         public async Task<OrderDto> CreateOrderAsync(OrderCreateDto orderCreateDto)
         {
-            // Kiểm tra các điều kiện đầu vào
-            if (orderCreateDto == null)
+            var request = await _requestRepository.GetRequestByIdAsync(orderCreateDto.RequestId);
+
+            if (request == null)
+                throw new InvalidOperationException("Request not found.");
+
+            if (request.Customer == null)
+                throw new InvalidOperationException("Customer information missing in request.");
+
+            if (request == null || request.Status != "Pending")
+                throw new InvalidOperationException("Invalid request.");
+
+            if (request.Status != "Pending")
+                throw new InvalidOperationException($"Cannot create order. Request status is '{request.Status}', expected 'Pending'.");
+
+            var service = await _servicePriceRepository.GetServicePriceByIdAsync(request.ServiceId);
+
+            if (service == null)
+                throw new InvalidOperationException("Service not found for the request.");
+
+            var order = new Order
             {
-                throw new ArgumentNullException(nameof(orderCreateDto), "OrderCreateDto is null.");
-            }
-
-            if (string.IsNullOrWhiteSpace(orderCreateDto.OrderDetailId))
-            {
-                throw new ArgumentException("OrderDetailId is required.");
-            }
-
-            var orderDetailIds = orderCreateDto.OrderDetailId.Split(',')
-                .Select(id => id.Trim())
-                .Where(id => !string.IsNullOrEmpty(id))
-                .Select(int.Parse)
-                .ToList();
-
-            var order = _mapper.Map<Order>(orderCreateDto); // Ánh xạ từ DTO sang Entity
+                OrderDate = DateTime.UtcNow,
+                CustomerId = request.CustomerId,
+                ServiceId = request.ServiceId,
+                Status = "Pending",
+                TotalPrice = service.Price
+            };
 
             var createdOrder = await _orderRepository.CreateOrderAsync(order);
-
-            if (createdOrder == null)
-            {
-                throw new InvalidOperationException("A problem happened while handling your request.");
-            }
-
-            return _mapper.Map<OrderDto>(createdOrder); // Ánh xạ từ Order sang OrderDto
+            return _mapper.Map<OrderDto>(createdOrder);
         }
 
-        // PUT: api/Order/5
         public async Task<bool> UpdateOrderAsync(int id, OrderCreateDto orderCreateDto)
         {
             var existingOrder = await _orderRepository.GetOrderByIdAsync(id);
 
             if (existingOrder == null)
             {
-                return false; // Nếu không tìm thấy Order
+                return false;
             }
 
-            // Kiểm tra và cập nhật OrderDetailId
-            var orderDetailIds = orderCreateDto.OrderDetailId.Split(',').Select(int.Parse).ToList();
+            _mapper.Map(orderCreateDto, existingOrder);
 
-            //foreach (var orderDetailId in orderDetailIds)
-            //{
-            //    var orderDetail = await _orderDetailRepository.GetOrderDetailByIdAsync(orderDetailId);
-            //    if (orderDetail == null)
-            //    {
-            //        throw new ArgumentException($"OrderDetailId {orderDetailId} is invalid.");
-            //    }
-            //}
-
-            _mapper.Map(orderCreateDto, existingOrder); // Ánh xạ từ DTO vào Order Entity hiện tại
-
-            return await _orderRepository.UpdateOrderAsync(existingOrder); // Cập nhật Order
+            return await _orderRepository.UpdateOrderAsync(existingOrder);
         }
 
-        // DELETE: api/Order/5
+        public async Task<bool> UpdateOrderStatusAsync(int id, string status)
+        {
+            var order = await _orderRepository.GetOrderByIdAsync(id);
+            if (order == null) return false;
+            order.Status = status;
+            return await _orderRepository.UpdateOrderAsync(order);
+        }
+
         public async Task<bool> DeleteOrderAsync(int id)
         {
-            return await _orderRepository.DeleteOrderAsync(id); // Xóa Order
+            return await _orderRepository.DeleteOrderAsync(id);
         }
     }
 }

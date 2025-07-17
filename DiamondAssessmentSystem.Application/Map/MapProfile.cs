@@ -111,6 +111,9 @@ namespace DiamondAssessmentSystem.Application.Map
             CreateMap<Result, ResultDto>().ReverseMap();
             CreateMap<Result, ResultCreateDto>().ReverseMap();
 
+            CreateMap<Order, OrderDto>();
+            CreateMap<OrderCreateDto, Order>();
+
             CreateMap<CustomerCreateDto, Customer>()
                 .ForMember(dest => dest.Idcard, opt => opt.MapFrom(src =>
                     string.IsNullOrEmpty(src.IdCard) ? (decimal?)null : decimal.Parse(src.IdCard)))

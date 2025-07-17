@@ -14,6 +14,7 @@ namespace DiamondAssessmentSystem.Application.Interfaces
         Task<int> GetCurentOrderId();
         Task<OrderDto> CreateOrderAsync(OrderCreateDto orderCreateDto);
         Task<bool> UpdateOrderAsync(int id, OrderCreateDto orderCreateDto);
+        Task<bool> UpdateOrderStatusAsync(int id, string status);
         Task<bool> DeleteOrderAsync(int id);
     }
 }
