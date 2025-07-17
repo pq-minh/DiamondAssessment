@@ -44,7 +44,7 @@ namespace DiamondAssessmentSystem.Application.Services
         }
 
         // Tạo một bản nháp yêu cầu mới
-        public async Task<bool> CreateDraftRequestAsync(string userId, RequestCreateDto draftDto)
+        public async Task<bool> CreateDraftRequestAsync(string userId, CreateRequestDto draftDto)
         {
             var draft = _mapper.Map<Request>(draftDto);
             draft.Status = "Draft";
@@ -61,7 +61,7 @@ namespace DiamondAssessmentSystem.Application.Services
         }
 
         // Tạo yêu cầu chính thức
-        public async Task<RequestDto> CreateFormAsync(RequestCreateDto formCreateDto)
+        public async Task<RequestDto> CreateFormAsync(CreateRequestDto formCreateDto)
         {
             var form = _mapper.Map<Request>(formCreateDto);
             form.Status = "Pending"; // đảm bảo trạng thái mặc định
@@ -70,7 +70,7 @@ namespace DiamondAssessmentSystem.Application.Services
         }
 
         // Cập nhật yêu cầu
-        public async Task<bool> UpdateFormAsync(int id, RequestCreateDto formCreateDto)
+        public async Task<bool> UpdateFormAsync(int id, CreateRequestDto formCreateDto)
         {
             var existingForm = await _requestRepository.GetRequestByIdAsync(id);
             if (existingForm == null) return false;
@@ -78,5 +78,6 @@ namespace DiamondAssessmentSystem.Application.Services
             _mapper.Map(formCreateDto, existingForm);
             return await _requestRepository.UpdateRequestAsync(existingForm);
         }
+
     }
 }

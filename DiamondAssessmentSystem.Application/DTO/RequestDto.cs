@@ -15,12 +15,11 @@ namespace DiamondAssessmentSystem.Application.DTO
         public string? Status { get; set; }
     }
 
-    public class RequestCreateDto
+    public class CreateRequestDto
     {
+        public int CustomerId { get; set; }
         public int ServiceId { get; set; }
-
         public string? RequestType { get; set; }
-
         public int? EmployeeId { get; set; }
     }
 }

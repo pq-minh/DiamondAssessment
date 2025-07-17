@@ -13,9 +13,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly DiamondAssessmentDbContext _context;
 
-        public UserRepository(UserManager<User> userManager,
-                                 RoleManager<IdentityRole> roleManager,
-                                 DiamondAssessmentDbContext context)
+        public UserRepository(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, DiamondAssessmentDbContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -44,7 +42,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 return roleResult;
 
             // Ghi vào bảng Employees nếu đúng UserType
-            if (user.UserType == "Employee")
+            if (user.UserType == "Employee" || user.UserType == "Manager")
             {
                 _context.Employees.Add(new Employee
                 {

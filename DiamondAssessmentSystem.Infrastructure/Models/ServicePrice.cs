@@ -13,6 +13,8 @@ public partial class ServicePrice
 
     public int Duration { get; set; }
 
+    public string Description { get; set; } = string.Empty;
+
     public int EmployeeId { get; set; }
 
     public string Status { get; set; } = null!;

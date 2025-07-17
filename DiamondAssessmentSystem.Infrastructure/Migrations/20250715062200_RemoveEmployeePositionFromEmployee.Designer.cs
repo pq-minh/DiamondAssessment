@@ -4,6 +4,7 @@ using DiamondAssessmentSystem.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiamondAssessmentSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(DiamondAssessmentDbContext))]
-    partial class DiamondAssessmentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250715062200_RemoveEmployeePositionFromEmployee")]
+    partial class RemoveEmployeePositionFromEmployee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -627,10 +630,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                         .HasColumnName("service_id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceId"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Duration")
                         .HasColumnType("int")

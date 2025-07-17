@@ -65,7 +65,7 @@ namespace DiamondAssessmentSystem.Controllers
 
         // POST: api/request/draft
         [HttpPost]
-        public async Task<ActionResult<RequestDto>> CreateDraftRequest(RequestCreateDto draftDto)
+        public async Task<ActionResult<RequestDto>> CreateDraftRequest(CreateRequestDto draftDto)
         {
             var userIdClaim = _currentUser.UserId;
 
@@ -95,7 +95,7 @@ namespace DiamondAssessmentSystem.Controllers
         // PUT: api/request/{id}
         //[Authorize(Roles = "Consultant")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRequest(int id, RequestCreateDto updateDto)
+        public async Task<IActionResult> UpdateRequest(int id, CreateRequestDto updateDto)
         {
             var updated = await _requestService.UpdateFormAsync(id, updateDto);
             if (!updated)

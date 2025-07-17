@@ -95,7 +95,7 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 
-    // 👇 VERY IMPORTANT for SignalR with JWT
+    //VERY IMPORTANT for SignalR with JWT
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>

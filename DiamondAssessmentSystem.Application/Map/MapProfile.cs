@@ -66,15 +66,44 @@ namespace DiamondAssessmentSystem.Application.Map
             CreateMap<RegisterDto, User>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username));
 
-            CreateMap<RegisterEmployeesDto, User>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username));
-
             CreateMap<User, AccountDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName));
 
+            CreateMap<RegisterStaffDto, User>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName));
+
+            //CreateMap<Employee, EmployeeDto>()
+            //    .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.UserName))
+            //    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+            //    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.User.Status))
+            //    .ForMember(dest => dest.Role, opt => opt.Ignore());
+
+            CreateMap<Employee, EmployeeDto>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.User.PhoneNumber))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User.Gender))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.User.Status))
+                .ForMember(dest => dest.Role, opt => opt.Ignore()) // Lấy role bằng service vì role từ UserManager.
+                .ForMember(dest => dest.Salary, opt => opt.MapFrom(src => src.Salary));
+
+
+            CreateMap<RegisterEmployeesDto, User>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username));
+
+            CreateMap<UpdateEmployeeDto, User>()
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Phone));
+            CreateMap<UpdateEmployeeDto, User>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+
             CreateMap<Request, RequestDto>().ReverseMap();
-            CreateMap<Request, RequestCreateDto>().ReverseMap();
+            CreateMap<Request, CreateRequestDto>().ReverseMap();
 
             CreateMap<ServicePrice, ServicePriceCreateDto>().ReverseMap();
             CreateMap<ServicePrice, ServicePriceDto>().ReverseMap();
