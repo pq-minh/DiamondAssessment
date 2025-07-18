@@ -29,6 +29,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         public async Task<Request?> GetRequestByIdAsync(int id)
         {
             return await _context.Requests
+                .Include(r => r.Service)
                 .Include(r => r.Customer)
                 .Include(r => r.Employee)
                 .Include(r => r.CommitmentRecords)
@@ -36,21 +37,32 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 .FirstOrDefaultAsync(r => r.RequestId == id);
         }
 
-        public async Task<bool> CreateDraftRequest(string userId, Request request)
+        //public async Task<bool> CreateDraftRequest(string? userId, Request request)
+        //{
+        //    if (!string.IsNullOrEmpty(userId))
+        //    {
+        //        var customerId = await GetCustomerId(userId);
+        //        if (customerId == -1)
+        //        {
+        //            return false;
+        //        }
+
+        //        request.CustomerId = customerId;
+        //    }
+
+        //    request.Status = "Draft";
+        //    request.RequestDate = DateTime.Now;
+
+        //    _context.Requests.Add(request);
+        //    await _context.SaveChangesAsync();
+        //    return true;
+        //}
+
+        public async Task<Request> AddDraftAsync(Request request)
         {
-            var customerId = await GetCustomerId(userId);
-
-            if (customerId == -1)
-            {
-                return false;
-            }
-
-            request.Status = "Draft";
-            request.RequestDate = DateTime.Now;
-
             _context.Requests.Add(request);
             await _context.SaveChangesAsync();
-            return true;
+            return request;
         }
 
         public async Task<bool> CancelRequestAsync(string userId, int requestId)

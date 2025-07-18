@@ -35,5 +35,8 @@ namespace DiamondAssessmentSystem.Application.Services
                 return int.TryParse(value, out var id) ? id : (int?)null;
             }
         }
+
+        public int? EmployeeId => int.TryParse(_httpContextAccessor.HttpContext?.User?.FindFirstValue("EmployeeId"), out var id) ? id : (int?)null;
+
     }
 }

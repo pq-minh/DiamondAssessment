@@ -35,6 +35,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return await _context.Results.Include(r => r.Request)
                                          .ThenInclude(r => r.Employee)
                                          .Include(r => r.Certificates)
+                                         .Where(r => r.Request.CustomerId == customerId) //chỉ trả kết quả của user đó
                                          .ToListAsync();
         }
 
@@ -55,7 +56,8 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
 
         public async Task<bool> UpdateResultAsync(Result result)
         {
-            _context.Entry(result).State = EntityState.Modified;
+            //_context.Entry(result).State = EntityState.Modified;
+            _context.Results.Update(result);
 
             try
             {
@@ -87,6 +89,22 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             }
 
             return customer.CustomerId;
+        }
+
+        public async Task<IEnumerable<Result>> GetResultsByAssessorIdAsync(int assessorId)
+        {
+            return await _context.Results
+                .Where(r => r.Request.EmployeeId == assessorId)
+                .ToListAsync();
+        }
+
+        public async Task<bool> DeleteResultAsync(int id)
+        {
+            var result = await _context.Results.FindAsync(id);
+            if (result == null) return false;
+
+            _context.Results.Remove(result);
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 }

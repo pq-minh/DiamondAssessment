@@ -7,6 +7,7 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
     public interface ICustomerRepository
     {
         Task<Customer?> GetCustomerByIdAsync(string userId);
+        Task<int?> GetCustomerIdByUserIdAsync(string userId);
         Task<bool> UpdateCustomerAsync(Customer customer);
     }
 }

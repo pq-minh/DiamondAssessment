@@ -1,8 +1,9 @@
-﻿using DiamondAssessmentSystem.Application.DTO;
+﻿using AutoMapper;
+using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
-using AutoMapper;
+using DiamondAssessmentSystem.Infrastructure.Repository;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,14 +13,18 @@ namespace DiamondAssessmentSystem.Application.Services
     public class ResultService : IResultService
     {
         private readonly IResultRepository _resultRepository;
+        private readonly IEmployeeRepository _employeeRepository;
         private readonly ICertificateRepository _certificateRepository;
+        private readonly ICurrentUserService _currentUser;
         private readonly IMapper _mapper;
 
-        public ResultService(IResultRepository resultRepository, IMapper mapper, ICertificateRepository certificateRepository)
+        public ResultService(IResultRepository resultRepository, IMapper mapper, ICertificateRepository certificateRepository, ICurrentUserService currentUser, IEmployeeRepository employeeRepository)
         {
             _resultRepository = resultRepository;
             _mapper = mapper;
             _certificateRepository = certificateRepository;
+            _currentUser = currentUser;
+            _employeeRepository = employeeRepository;
         }
 
         // Lấy danh sách kết quả
@@ -44,16 +49,23 @@ namespace DiamondAssessmentSystem.Application.Services
                 return null; 
             }
 
-            return _mapper.Map<ResultDto>(result);  
+            return _mapper.Map<ResultDto>(result);
         }
 
         // Tạo kết quả mới
         public async Task<ResultDto> CreateResultAsync(ResultCreateDto resultCreateDto)
         {
-            var result = _mapper.Map<Result>(resultCreateDto);  
+            var result = _mapper.Map<Result>(resultCreateDto);
 
             var createdResult = await _resultRepository.CreateResultAsync(result);
-            return _mapper.Map<ResultDto>(createdResult);
+            //return _mapper.Map<ResultDto>(createdResult);
+            var resultDto = _mapper.Map<ResultDto>(createdResult);
+
+            // Lấy thông tin assessor từ _currentUser, trả về trong DTO tạm thời
+            resultDto.AssessorId = _currentUser.EmployeeId ?? 0;
+            //resultDto.AssessorName = _currentUser.FullName;
+
+            return resultDto;
         }
 
         // Cập nhật kết quả

@@ -92,7 +92,6 @@ namespace DiamondAssessmentSystem.Application.Map
                 .ForMember(dest => dest.Role, opt => opt.Ignore()) // Lấy role bằng service vì role từ UserManager.
                 .ForMember(dest => dest.Salary, opt => opt.MapFrom(src => src.Salary));
 
-
             CreateMap<RegisterEmployeesDto, User>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username));
 
@@ -104,6 +103,10 @@ namespace DiamondAssessmentSystem.Application.Map
 
             CreateMap<Request, RequestDto>().ReverseMap();
             CreateMap<Request, CreateRequestDto>().ReverseMap();
+            CreateMap<CreateDraftRequestDto, Request>()
+                .ForMember(dest => dest.EmployeeId, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.RequestDate, opt => opt.Ignore());
 
             CreateMap<ServicePrice, ServicePriceCreateDto>().ReverseMap();
             CreateMap<ServicePrice, ServicePriceDto>().ReverseMap();

@@ -3,6 +3,7 @@ using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
+using DiamondAssessmentSystem.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace DiamondAssessmentSystem.Application.Services
     public class RequestService : IRequestService
     {
         private readonly IRequestRepository _requestRepository;
+        private readonly ICustomerRepository _customerRepository;
         private readonly DiamondAssessmentDbContext _context;
         private readonly ICurrentUserService _currentUser;
         private readonly IMapper _mapper;
@@ -36,6 +38,7 @@ namespace DiamondAssessmentSystem.Application.Services
         {
             var form = await _requestRepository.GetRequestByIdAsync(id);
             if (form == null) return null;
+
             return _mapper.Map<RequestDto>(form);
         }
 
@@ -46,50 +49,45 @@ namespace DiamondAssessmentSystem.Application.Services
             return _mapper.Map<IEnumerable<RequestDto>>(requests);
         }
 
-        // Tạo một bản nháp yêu cầu mới
-        public async Task<bool> CreateDraftRequestAsync(string userId, CreateRequestDto draftDto)
-        {
-            var draft = _mapper.Map<Request>(draftDto);
-            draft.Status = "Draft";
-
-            var res = await _requestRepository.CreateDraftRequest(userId, draft);
- 
-            return res;
-        }
-
-        // Hủy yêu cầu nếu nó là bản nháp
-        public async Task<bool> CancelRequest(string userId, int requestId)
-        {
-            return await _requestRepository.CancelRequestAsync(userId, requestId);
-        }
-
         // Tạo yêu cầu chính thức
         public async Task<RequestDto> CreateRequestAsync(CreateRequestDto createDto)
         {
-            // Kiểm tra xem customer có tồn tại không
             var customerExists = await _context.Customers.AnyAsync(c => c.CustomerId == createDto.CustomerId);
             if (!customerExists)
                 throw new Exception("Customer not found");
 
-            // Kiểm tra xem nhân viên có tồn tại và có vai trò là Consultant không
+            Employee? consultant = null;
+            User? consultantUser = null;
+
             if (createDto.EmployeeId.HasValue)
             {
-                var consultant = await _context.Employees.FirstOrDefaultAsync(e => e.EmployeeId == createDto.EmployeeId.Value);
-                //.FirstOrDefaultAsync(e => e.EmployeeId == createDto.EmployeeId.Value && e.Role == "Consultant");
+                consultant = await _context.Employees
+                    .FirstOrDefaultAsync(e => e.EmployeeId == createDto.EmployeeId.Value);
 
                 if (consultant == null)
-                    throw new Exception("Consultant not found or invalid role");
+                    throw new Exception("Consultant not found");
+
+                consultantUser = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == consultant.UserId);
             }
 
-            var request  = _mapper.Map<Request>(createDto);
+            var request = _mapper.Map<Request>(createDto);
             request.Status = "Pending";
 
             var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
-            request.RequestDate = vietnamTime;
+            request.RequestDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
 
             var created = await _requestRepository.AddAsync(request);
-            return _mapper.Map<RequestDto>(created);
+
+            var result = _mapper.Map<RequestDto>(created);
+
+            // Ghép tên nếu có consultant
+            if (consultantUser != null)
+            {
+                result.EmployeeName = $"{consultantUser.FirstName} {consultantUser.LastName}".Trim();
+            }
+
+            return result;
         }
 
         // Cập nhật yêu cầu
@@ -125,6 +123,53 @@ namespace DiamondAssessmentSystem.Application.Services
 
             return await _requestRepository.UpdateStatusAsync(request);
         }
+        // Draft----------------------------------------------------------------
 
+        // Tạo một bản nháp yêu cầu mới
+        public async Task<RequestDto> CreateDraftRequestAsync(string? userId, CreateDraftRequestDto draftDto)
+        {
+            int customerId;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var customerIdFromRepo = await _customerRepository.GetCustomerIdByUserIdAsync(userId);
+                if (customerIdFromRepo == null)
+                    throw new InvalidOperationException("Customer not found.");
+
+                customerId = customerIdFromRepo.Value;
+            }
+            else
+            {
+                if (draftDto.CustomerId <= 0)
+                    throw new InvalidOperationException("CustomerId is required if user is not authenticated.");
+
+                customerId = draftDto.CustomerId;
+            }
+
+            var request = _mapper.Map<Request>(draftDto);
+            request.CustomerId = customerId;
+            request.Status = "Draft";
+            request.RequestDate = DateTime.UtcNow;
+
+            var created = await _requestRepository.AddDraftAsync(request);
+            return _mapper.Map<RequestDto>(created);
+        }
+
+        // Hủy yêu cầu nếu nó là bản nháp
+        public async Task<bool> CancelRequest(string userId, int requestId)
+        {
+            return await _requestRepository.CancelRequestAsync(userId, requestId);
+        }
+
+        public async Task<bool> SubmitRequestAsync(int requestId)
+        {
+            var request = await _requestRepository.GetRequestByIdAsync(requestId);
+            if (request == null) return false;
+
+            if (request.Status != "Draft") return false;
+
+            request.Status = "Pending"; // Hoặc "Submitted"
+            return await _requestRepository.UpdateStatusAsync(request);
+        }
     }
 }

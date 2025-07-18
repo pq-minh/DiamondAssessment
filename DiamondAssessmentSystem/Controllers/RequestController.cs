@@ -106,9 +106,10 @@ namespace DiamondAssessmentSystem.Controllers
 
         // For Customer to creating a draft request
         [HttpPost("Create-draft")]
-        public async Task<ActionResult<RequestDto>> CreateDraftRequest(CreateRequestDto draftDto)
+        public async Task<ActionResult<RequestDto>> CreateDraftRequest(CreateDraftRequestDto draftDto)
         {
-            var userIdClaim = _currentUser.UserId;
+            var userIdClaim = _currentUser.UserId; // sẽ null nếu không có token
+
 
             if (userIdClaim == null)
                 return Unauthorized();
@@ -117,12 +118,19 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(draft);
         }
 
-        // POST: api/request/Cancel-Draft/{id}
-        [HttpPost("Cancel-Draft/{id}")]
+        [HttpPut("SubmitRequest/{requestId}")]
+        public async Task<IActionResult> SubmitRequest(int requestId)
+        {
+            var result = await _requestService.SubmitRequestAsync(requestId);
+            if (!result) return BadRequest("Cannot submit request.");
+            return Ok("Request submitted successfully.");
+        }
+
+        // PATCH: api/request/cancel-draft/{id}
+        [HttpPatch("cancel-draft/{id}")]
         public async Task<IActionResult> CancelDraftRequest(int id)
         {
             var userIdClaim = _currentUser.UserId;
-
             if (userIdClaim == null)
                 return Unauthorized();
 
@@ -130,7 +138,7 @@ namespace DiamondAssessmentSystem.Controllers
             if (!success)
                 return BadRequest("Cancellation is only possible when the request is in 'Draft' status.");
 
-            return Ok();
+            return Ok("Draft request cancelled successfully.");
         }
 
     }

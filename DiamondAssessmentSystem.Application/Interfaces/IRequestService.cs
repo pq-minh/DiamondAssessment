@@ -19,7 +19,9 @@ namespace DiamondAssessmentSystem.Application.Interfaces
         Task<bool> CancelRequestAsync(int requestId);
 
         //draft-------------------------------------------------------
-        Task<bool> CreateDraftRequestAsync(string userId, CreateRequestDto draftDto);
+        //Task<bool> CreateDraftRequestAsync(string userId, CreateDraftRequestDto draftDto);
+        Task<RequestDto> CreateDraftRequestAsync(string? userId, CreateDraftRequestDto draftDto);
+        Task<bool> SubmitRequestAsync(int requestId);
         Task<bool> CancelRequest(string userId, int requestId);
     }
 }

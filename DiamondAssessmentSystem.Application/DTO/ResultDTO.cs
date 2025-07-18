@@ -4,8 +4,8 @@
     {
         public int ResultId { get; set; }
 
-        public int AssessmentStaff { get; set; }
-
+        public int AssessorId { get; set; }
+        public string? AssessorName { get; set; }
         public int DiamondId { get; set; }
 
         public int RequestId { get; set; }
@@ -37,7 +37,7 @@
 
     public class ResultCreateDto
     {
-        public int DiamondId { get; set; }
+        //public int DiamondId { get; set; }
 
         public int RequestId { get; set; }
 

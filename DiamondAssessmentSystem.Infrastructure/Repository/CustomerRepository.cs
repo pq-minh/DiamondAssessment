@@ -21,6 +21,12 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return await _context.Customers.Include(c => c.User).FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
+        public async Task<int?> GetCustomerIdByUserIdAsync(string userId)
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+            return customer?.CustomerId;
+        }
+
         public async Task<bool> UpdateCustomerAsync(Customer customer)
         {
             _context.Entry(customer.User).State = EntityState.Modified;

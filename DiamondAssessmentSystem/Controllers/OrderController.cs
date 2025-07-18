@@ -62,7 +62,7 @@ namespace DiamondAssessmentSystem.Controllers
         //    }
 
         //    return NoContent();
-        }
+        //}
 
         [HttpPatch("{id}/status")]
         //[Authorize(Roles = "Admin,Consultant")]

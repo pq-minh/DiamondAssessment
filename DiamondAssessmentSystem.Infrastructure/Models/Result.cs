@@ -10,6 +10,7 @@ public partial class Result
     public int DiamondId { get; set; }
 
     public int RequestId { get; set; }
+    public int EmployeeId { get; set; }
 
     public string DiamondOrigin { get; set; } = null!;
 
@@ -34,6 +35,8 @@ public partial class Result
     public string? Fluorescence { get; set; }
 
     public string Status { get; set; } = null!;
+
+    public virtual Employee Employee { get; set; } = null!;
 
     public virtual ICollection<Certificate> Certificates { get; set; } = new List<Certificate>();
 

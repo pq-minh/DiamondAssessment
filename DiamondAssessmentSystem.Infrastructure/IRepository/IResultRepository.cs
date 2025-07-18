@@ -8,8 +8,10 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
     {
         Task<IEnumerable<Result>> GetResultsAsync();
         Task<IEnumerable<Result>> GetPersonalResults(string userId);
+        Task<IEnumerable<Result>> GetResultsByAssessorIdAsync(int assessorId);
         Task<Result?> GetResultByIdAsync(int id);
         Task<Result> CreateResultAsync(Result result);
         Task<bool> UpdateResultAsync(Result result);
+        Task<bool> DeleteResultAsync(int id);
     }
 }

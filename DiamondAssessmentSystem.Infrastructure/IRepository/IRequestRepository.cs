@@ -14,7 +14,8 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
         Task<bool> DeleteAsync(Request request);
         Task<bool> UpdateStatusAsync(Request request);
         //draft----------------------------------------
-        Task<bool> CreateDraftRequest(string userId, Request request);
+        //Task<bool> CreateDraftRequest(string userId, Request request);
+        Task<Request> AddDraftAsync(Request request);
         Task<bool> CancelRequestAsync(string userId, int requestId);
 
     }
