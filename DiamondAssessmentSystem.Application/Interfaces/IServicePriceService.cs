@@ -14,6 +14,7 @@ namespace DiamondAssessmentSystem.Application.Interfaces
         Task<IEnumerable<ServicePriceDto>> GetServicePrices(string status);
 
         Task<ServicePriceDto?> GetServicePrice(int id);
+        Task<bool> AssignEmployeeAsync(int servicePriceId, int employeeId);
 
         Task<ServicePriceDto> PostServicePrice(ServicePriceCreateDto servicePriceCreateDto);
 

@@ -61,6 +61,16 @@ namespace DiamondAssessmentSystem.WebAPI.Controllers
             return Ok(servicePrice);
         }
 
+        [HttpPut("AssignEmployee")]
+        public async Task<IActionResult> AssignEmployee(int servicePriceId, int employeeId)
+        {
+            var result = await _servicePriceService.AssignEmployeeAsync(servicePriceId, employeeId);
+            if (!result) return NotFound("ServicePrice or Employee not found");
+
+            return Ok("Employee assigned successfully");
+        }
+
+
         // POST: api/ServicePrice
         [HttpPost]
         public async Task<ActionResult<ServicePriceDto>> PostServicePrice(ServicePriceCreateDto servicePriceCreateDto)

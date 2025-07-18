@@ -10,6 +10,7 @@ namespace DiamondAssessmentSystem.Application.Interfaces
     {
         string? UserId { get; }
         string? UserName { get; }
+        int? CustomerId { get; }
         int? EmployeeId { get; }
         string? Role { get; }
         int? AssociatedId { get; }

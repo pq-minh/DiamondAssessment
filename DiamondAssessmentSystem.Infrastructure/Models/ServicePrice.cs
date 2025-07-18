@@ -15,7 +15,7 @@ public partial class ServicePrice
 
     public string Description { get; set; } = string.Empty;
 
-    public int EmployeeId { get; set; }
+    public int? EmployeeId { get; set; }
 
     public string Status { get; set; } = null!;
 

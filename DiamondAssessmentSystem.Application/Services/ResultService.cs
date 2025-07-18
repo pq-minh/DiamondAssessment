@@ -57,13 +57,17 @@ namespace DiamondAssessmentSystem.Application.Services
         {
             var result = _mapper.Map<Result>(resultCreateDto);
 
+            // Gán EmployeeId là Assessor hiện tại nếu chưa có
+            if (result.EmployeeId == 0 || result.EmployeeId == null)
+            {
+                result.EmployeeId = _currentUser.EmployeeId ?? 0;
+            }
+
             var createdResult = await _resultRepository.CreateResultAsync(result);
-            //return _mapper.Map<ResultDto>(createdResult);
             var resultDto = _mapper.Map<ResultDto>(createdResult);
 
             // Lấy thông tin assessor từ _currentUser, trả về trong DTO tạm thời
             resultDto.AssessorId = _currentUser.EmployeeId ?? 0;
-            //resultDto.AssessorName = _currentUser.FullName;
 
             return resultDto;
         }

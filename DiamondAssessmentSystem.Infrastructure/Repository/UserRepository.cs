@@ -71,6 +71,22 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
+        public async Task<int?> GetCustomerIdByUserIdAsync(string userId)
+        {
+            return await _context.Customers
+                .Where(c => c.UserId == userId)
+                .Select(c => (int?)c.CustomerId)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<int?> GetEmployeeIdByUserIdAsync(string userId)
+        {
+            return await _context.Employees
+                .Where(e => e.UserId == userId)
+                .Select(e => (int?)e.EmployeeId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<bool> DeleteUserAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);

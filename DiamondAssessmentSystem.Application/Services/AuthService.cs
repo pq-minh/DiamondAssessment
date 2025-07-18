@@ -18,6 +18,7 @@ namespace DiamondAssessmentSystem.Application.Services
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
+
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
 
@@ -67,6 +68,53 @@ namespace DiamondAssessmentSystem.Application.Services
             };
         }
 
+        //private async Task<string> GenerateJwtToken(User user, IList<string> roles)
+        //{
+        //    var claims = new List<Claim>
+        //    {
+        //        new Claim(ClaimTypes.Name, user.UserName),
+        //        new Claim(ClaimTypes.NameIdentifier, user.Id),
+        //        new Claim("UserType", user.UserType ?? "")
+        //    };
+
+        //    claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+        //    if (user.UserType == "Employee" || user.UserType == "Manager")
+        //    {
+        //        var employeeId = await _userRepository.GetEmployeeIdByUserIdAsync(user.Id);
+        //        if (!employeeId.HasValue)
+        //            throw new UnauthorizedAccessException("Employee does not exist.");
+        //        claims.Add(new Claim("EmployeeId", employeeId.Value.ToString()));
+        //    }
+        //    else if (user.UserType == "Customer")
+        //    {
+        //        var customerId = await _userRepository.GetCustomerIdByUserIdAsync(user.Id);
+        //        if (!customerId.HasValue)
+        //            throw new UnauthorizedAccessException("Customer does not exist.");
+        //        claims.Add(new Claim("AssociatedId", customerId.Value.ToString()));
+        //    }
+
+        //    var associatedId = await _userRepository.GetAssociatedIdByUserIdAsync(user.Id);
+        //    if (!associatedId.HasValue)
+        //    {
+        //        throw new UnauthorizedAccessException("Your account is not assigned Customer or Employee. Please contact administrator.");
+        //    }
+
+        //    claims.Add(new Claim("AssociatedId", associatedId.Value.ToString()));
+
+        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        //    var token = new JwtSecurityToken(
+        //        issuer: _configuration["Jwt:Issuer"],
+        //        audience: _configuration["Jwt:Issuer"],
+        //        claims: claims,
+        //        expires: DateTime.UtcNow.AddHours(1),
+        //        signingCredentials: creds);
+
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+        //}
+
         private async Task<string> GenerateJwtToken(User user, IList<string> roles)
         {
             var claims = new List<Claim>
@@ -78,13 +126,22 @@ namespace DiamondAssessmentSystem.Application.Services
 
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-            var associatedId = await _userRepository.GetAssociatedIdByUserIdAsync(user.Id);
-            if (!associatedId.HasValue)
+            if (user.UserType == "Customer")
             {
-                throw new UnauthorizedAccessException("Your account is not assigned Customer or Employee. Please contact administrator.");
-            }
+                var customerId = await _userRepository.GetCustomerIdByUserIdAsync(user.Id);
+                if (!customerId.HasValue)
+                    throw new UnauthorizedAccessException("No CustomerId found.");
 
-            claims.Add(new Claim("AssociatedId", associatedId.Value.ToString()));
+                claims.Add(new Claim("AssociatedId", customerId.Value.ToString()));
+            }
+            else if (user.UserType == "Employee" || user.UserType == "Manager")
+            {
+                var employeeId = await _userRepository.GetEmployeeIdByUserIdAsync(user.Id);
+                if (!employeeId.HasValue)
+                    throw new UnauthorizedAccessException("No EmployeeId found.");
+
+                claims.Add(new Claim("EmployeeId", employeeId.Value.ToString()));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -98,5 +155,6 @@ namespace DiamondAssessmentSystem.Application.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }

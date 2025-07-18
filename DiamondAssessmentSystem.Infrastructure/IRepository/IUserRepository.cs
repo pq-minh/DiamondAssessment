@@ -1,5 +1,6 @@
 ﻿using DiamondAssessmentSystem.Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,6 +11,8 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
         Task<IdentityResult> CreateEmployeeWithRoleAsync(User user, string password, string role);
         Task<List<User>> GetAllUsersAsync();
         Task<User?> GetUserByIdAsync(string userId);
+        Task<int?> GetCustomerIdByUserIdAsync(string userId);
+        Task<int?> GetEmployeeIdByUserIdAsync(string userId);
         Task<bool> DeleteUserAsync(string userId);
         Task<bool> UpdateUserAsync(User user);
         Task<bool> UserExistsAsync(string username);

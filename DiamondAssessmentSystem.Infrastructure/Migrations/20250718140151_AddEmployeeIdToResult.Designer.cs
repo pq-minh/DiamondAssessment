@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiamondAssessmentSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(DiamondAssessmentDbContext))]
-    [Migration("20250718035111_AddEmployeeIdToResult")]
+    [Migration("20250718140151_AddEmployeeIdToResult")]
     partial class AddEmployeeIdToResult
     {
         /// <inheritdoc />

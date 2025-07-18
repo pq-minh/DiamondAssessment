@@ -20,6 +20,12 @@ namespace DiamondAssessmentSystem.Application.Services
             _mapper = mapper;
         }
 
+        public async Task<CustomerDto> GetCurrentCustomerAsync(string currentUserId)
+        {
+            var customer = await _customerRepository.GetCustomerByUserIdAsync(currentUserId);
+            return customer == null ? null : _mapper.Map<CustomerDto>(customer);
+        }
+
         public async Task<CustomerDto> GetCustomerByIdAsync(string userId)
         {
             var customer = await _customerRepository.GetCustomerByIdAsync(userId);
@@ -30,6 +36,15 @@ namespace DiamondAssessmentSystem.Application.Services
 
             return _mapper.Map<CustomerDto>(customer); 
         }
+
+        public async Task<CustomerDto?> GetCustomerByCustomerIdAsync(int customerId)
+        {
+            var customer = await _customerRepository.GetCustomerByCustomerIdAsync(customerId);
+            if (customer == null) return null;
+
+            return _mapper.Map<CustomerDto>(customer);
+        }
+
 
         public async Task<bool> UpdateCustomerAsync(string userId, CustomerCreateDto customerCreateDto)
         {

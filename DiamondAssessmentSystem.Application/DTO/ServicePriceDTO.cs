@@ -6,7 +6,7 @@
         public string ServiceType { get; set; }
         public decimal? Price { get; set; }
         public string? Description { get; set; }
-        public string? Duration { get; set; }
+        public int? Duration { get; set; }
         public int EmployeeId { get; set; }
         public string Status { get; set; }
     }
@@ -16,8 +16,8 @@
         public string ServiceType { get; set; }
         public decimal? Price { get; set; }
         public string? Description { get; set; }
-        public string? Duration { get; set; }
-        public int EmployeeId { get; set; }
+        public int? Duration { get; set; }
+        //public int EmployeeId { get; set; }
         public string Status { get; set; }
     }
 }

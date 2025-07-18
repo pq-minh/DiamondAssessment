@@ -21,6 +21,17 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return await _context.Customers.Include(c => c.User).FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
+        public async Task<Customer?> GetCustomerByUserIdAsync(string userId)
+        {
+            return await _context.Customers.Include(c => c.User).FirstOrDefaultAsync(c => c.UserId == userId);
+        }
+
+        public async Task<Customer?> GetCustomerByCustomerIdAsync(int customerId)
+        {
+            return await _context.Customers.Include(c => c.User).FirstOrDefaultAsync(c => c.CustomerId == customerId);
+        }
+
+
         public async Task<int?> GetCustomerIdByUserIdAsync(string userId)
         {
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);

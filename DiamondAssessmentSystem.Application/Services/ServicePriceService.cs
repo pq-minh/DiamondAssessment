@@ -3,6 +3,7 @@ using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
+using DiamondAssessmentSystem.Infrastructure.Repository;
 
 namespace DiamondAssessmentSystem.Application.Services
 {
@@ -10,14 +11,15 @@ namespace DiamondAssessmentSystem.Application.Services
     {
         private readonly IMapper _mapper;
         private readonly IServicePriceRepository _servicePriceRepository;
+        private readonly IEmployeeRepository _employeeRepository;
 
-        public ServicePriceService(IServicePriceRepository servicePriceRepository, IMapper mapper)
+        public ServicePriceService(IServicePriceRepository servicePriceRepository, IMapper mapper, IEmployeeRepository employeeRepository)
         {
             _servicePriceRepository = servicePriceRepository;
             _mapper = mapper;
+            _employeeRepository = employeeRepository;
         }
 
-        // GET: api/ServicePrices
         public async Task<IEnumerable<ServicePriceDto>> GetServicePrices()
         {
             var servicePrices = await _servicePriceRepository.GetServicePricesAsync();
@@ -32,7 +34,6 @@ namespace DiamondAssessmentSystem.Application.Services
             return result;
         }
 
-        // GET: api/ServicePrices/{id}
         public async Task<ServicePriceDto?> GetServicePrice(int id)
         {
             var servicePrice = await _servicePriceRepository.GetServicePriceByIdAsync(id);
@@ -46,7 +47,6 @@ namespace DiamondAssessmentSystem.Application.Services
             return result;
         }
 
-        // POST: api/ServicePrices
         public async Task<ServicePriceDto> PostServicePrice(ServicePriceCreateDto servicePriceCreateDto)
         {
             var servicePrice = _mapper.Map<ServicePrice>(servicePriceCreateDto);
@@ -57,7 +57,6 @@ namespace DiamondAssessmentSystem.Application.Services
             return createdServicePriceDto;
         }
 
-        // PUT: api/ServicePrices/{id}
         public async Task<bool> UpdateServicePrice(int id, ServicePriceCreateDto servicePriceCreateDto)
         {
             var existingServicePrice = await _servicePriceRepository.GetServicePriceByIdAsync(id);
@@ -75,7 +74,6 @@ namespace DiamondAssessmentSystem.Application.Services
             return updated;
         }
 
-        // DELETE: api/ServicePrices/{id}
         public async Task<bool> DeleteServicePrice(int id)
         {
             var existingServicePrice = await _servicePriceRepository.GetServicePriceByIdAsync(id);
@@ -90,5 +88,20 @@ namespace DiamondAssessmentSystem.Application.Services
             var deleted = await _servicePriceRepository.UpdateServicePriceAsync(existingServicePrice);
             return deleted;
         }
+
+        public async Task<bool> AssignEmployeeAsync(int servicePriceId, int employeeId)
+        {
+            var servicePrice = await _servicePriceRepository.GetServicePriceByIdAsync(servicePriceId);
+            if (servicePrice == null) return false;
+
+            var employee = await _employeeRepository.GetEmployeeByIdAsync(employeeId);
+            if (employee == null) return false;
+
+            servicePrice.EmployeeId = employeeId;
+            await _servicePriceRepository.UpdateServicePriceAsync(servicePrice);
+
+            return true;
+        }
+
     }
 }
