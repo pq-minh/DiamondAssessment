@@ -17,7 +17,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
 
         public async Task<IEnumerable<Blog>> GetBlogsAsync()
         {
-            return await _context.Blogs.ToListAsync();
+            return await _context.Blogs.Include(b => b.Employee).ToListAsync();
         }
 
         public async Task<Blog?> GetBlogByIdAsync(int id)

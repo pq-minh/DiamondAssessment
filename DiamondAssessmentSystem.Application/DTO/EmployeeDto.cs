@@ -4,19 +4,19 @@ namespace DiamondAssessmentSystem.Application.DTO
 {
     public class EmployeeDto
     {
-        [MaxLength(100)]
-        public string? FirstName { get; set; }
+        //[MaxLength(100)]
+        //public string? FirstName { get; set; }
 
-        [MaxLength(100)]
-        public string? LastName { get; set; }
+        //[MaxLength(100)]
+        //public string? LastName { get; set; }
 
-        [EmailAddress]
-        public string? Email { get; set; }
+        //[EmailAddress]
+        //public string? Email { get; set; }
 
-        [Phone]
-        public string? Phone { get; set; }
+        //[Phone]
+        //public string? Phone { get; set; }
 
-        public string? Gender { get; set; }
+        //public string? Gender { get; set; }
 
         public decimal? Salary { get; set; }
     }

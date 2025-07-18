@@ -114,12 +114,12 @@ namespace DiamondAssessmentSystem.Application.Map
             //    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
             //    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.User.PhoneNumber))
             //    .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User.Gender));
-            CreateMap<Employee, EmployeeDto>()
-                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
-                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
-                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.User.PhoneNumber))
-                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User.Gender));
+            CreateMap<Employee, EmployeeDto>();
+                //.ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
+                //.ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
+                //.ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+                //.ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.User.PhoneNumber))
+                //.ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User.Gender));
 
             CreateMap<EmployeeDto, Employee>()
                 .ForMember(dest => dest.User, opt => opt.Ignore());
