@@ -3,6 +3,7 @@ using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
+using DiamondAssessmentSystem.Infrastructure.Repository;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace DiamondAssessmentSystem.Application.Services
         private readonly ICurrentUserService _currentUser;
         private readonly IVnPayService _vnPayService;
         private readonly IMapper _mapper;
+        private readonly IServicePriceRepository _servicePriceRepository;
 
         public OrderService(
             IOrderRepository orderRepository,
@@ -24,7 +26,8 @@ namespace DiamondAssessmentSystem.Application.Services
             ICurrentUserService currentUser,
             IRequestRepository requestRepository,
             IVnPayService vnPayService,
-            IPaymentRepository paymentRepository)
+            IPaymentRepository paymentRepository,
+            IServicePriceRepository servicePriceRepository) 
         {
             _orderRepository = orderRepository;
             _currentUser = currentUser;
@@ -32,6 +35,7 @@ namespace DiamondAssessmentSystem.Application.Services
             _requestRepository = requestRepository;
             _vnPayService = vnPayService;
             _paymentRepository = paymentRepository;
+            _servicePriceRepository = servicePriceRepository; 
         }
 
         public async Task<IEnumerable<OrderDto>> GetOrdersAsync()
@@ -65,21 +69,29 @@ namespace DiamondAssessmentSystem.Application.Services
             if (orderCreateDto == null)
                 throw new ArgumentNullException(nameof(orderCreateDto));
 
-            var order = _mapper.Map<Order>(orderCreateDto);
+            var request = await _requestRepository.GetRequestByIdAsync(requestId);
+            if (request == null)
+                throw new InvalidOperationException("Invalid request ID.");
+
+            var service = await _servicePriceRepository.GetByIdAsync(request.ServiceId);
+            if (service == null)
+                throw new InvalidOperationException("Invalid service ID from request.");
+
+            var order = new Order
+            {
+                OrderDate = orderCreateDto.OrderDate,
+                ServiceId = request.ServiceId,  
+                TotalPrice = service.Price,
+                Status = paymentType == "Offline" ? "Pending" : "Completed"
+            };
 
             if (paymentType == "Online")
             {
                 var paymentResult = _vnPayService.ExecutePayment(paymentRequest);
                 if (paymentResult == null || !paymentResult.Success)
                     return false;
-
-                order.Status = "Completed";
             }
-            else if (paymentType == "Offline")
-            {
-                order.Status = "Pending";
-            }
-            else
+            else if (paymentType != "Offline")
             {
                 throw new ArgumentException($"Unsupported payment type: {paymentType}");
             }
@@ -118,11 +130,16 @@ namespace DiamondAssessmentSystem.Application.Services
                 return false;
 
             if (existing.Status == "Completed" || existing.Status == "Canceled")
-            {
-                return false; 
-            }
+                return false;
 
-            _mapper.Map(orderCreateDto, existing);
+            existing.OrderDate = orderCreateDto.OrderDate;
+
+            var service = await _servicePriceRepository.GetByIdAsync(existing.ServiceId);
+            if (service == null)
+                throw new InvalidOperationException("Invalid service ID.");
+
+            existing.TotalPrice = service.Price;
+
             return await _orderRepository.UpdateOrderAsync(existing);
         }
 

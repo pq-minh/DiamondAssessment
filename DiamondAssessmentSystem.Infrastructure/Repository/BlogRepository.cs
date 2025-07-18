@@ -17,18 +17,35 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
 
         public async Task<IEnumerable<Blog>> GetBlogsAsync()
         {
-            return await _context.Blogs.Include(b => b.Employee).ToListAsync();
+            return await _context.Blogs
+                .Include(b => b.Employee)
+                .ThenInclude(e => e.User) 
+                .ToListAsync();
         }
 
         public async Task<Blog?> GetBlogByIdAsync(int id)
         {
-            return await _context.Blogs.FindAsync(id);
+            return await _context.Blogs
+                .Include(b => b.Employee)
+                .ThenInclude(e => e.User)
+                .FirstOrDefaultAsync(b => b.BlogId == id);
+        }
+
+        public async Task<IEnumerable<Blog>> GetBlogsByEmployeeIdAsync(int employeeId)
+        {
+            return await _context.Blogs
+                .Where(b => b.EmployeeId == employeeId)
+                .Include(b => b.Employee)
+                .ThenInclude(e => e.User)
+                .ToListAsync();
         }
 
         public async Task<Blog> CreateBlogAsync(string userId, Blog blog)
         {
             var employeeId = await GetEmployeeId(userId);
             blog.EmployeeId = employeeId;
+
+            blog.CreatedDate = DateTime.UtcNow;
 
             _context.Blogs.Add(blog);
             await _context.SaveChangesAsync();
@@ -39,22 +56,22 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         {
             var employeeId = await GetEmployeeId(userId);
 
-            _context.Entry(blog).State = EntityState.Modified;
-            blog.EmployeeId = employeeId;
+            var existing = await _context.Blogs.FirstOrDefaultAsync(b => b.BlogId == blog.BlogId);
+            if (existing == null)
+            {
+                return false;
+            }
 
-            try
-            {
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!await BlogExistsAsync(blog.BlogId))
-                {
-                    return false;
-                }
-                throw;
-            }
+            existing.Title = blog.Title;
+            existing.Content = blog.Content;
+            existing.ImageUrl = blog.ImageUrl;
+            existing.BlogType = blog.BlogType;
+            existing.Status = blog.Status ?? "Draft";
+            existing.UpdatedDate = DateTime.UtcNow;
+            existing.EmployeeId = employeeId;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         private async Task<bool> BlogExistsAsync(int id)
@@ -62,7 +79,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return await _context.Blogs.AnyAsync(e => e.BlogId == id);
         }
 
-        private async Task<int> GetEmployeeId(string userId)
+        public async Task<int> GetEmployeeId(string userId)
         {
             var employee = await _context.Employees.FirstOrDefaultAsync(x => x.UserId == userId);
 

@@ -26,11 +26,11 @@ namespace DiamondAssessmentSystem.Application.DTO
         [Required]
         public DateTime OrderDate { get; set; }
 
-        [Required]
-        public int ServiceId { get; set; }
+        //[Required]
+        //public int ServiceId { get; set; }
 
-        [Range(0, double.MaxValue)]
-        public decimal TotalPrice { get; set; }
+        //[Range(0, double.MaxValue)]
+        //public decimal TotalPrice { get; set; }
     }
 
     public class OrderPaymentDto

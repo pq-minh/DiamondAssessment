@@ -22,20 +22,52 @@ namespace DiamondAssessmentSystem.Application.Services
         public async Task<IEnumerable<BlogDto>> GetBlogs()
         {
             var blogs = await _blogRepository.GetBlogsAsync();
-            var blogDtos = _mapper.Map<IEnumerable<BlogDto>>(blogs);  
+
+            var blogDtos = blogs.Select(blog =>
+            {
+                var dto = _mapper.Map<BlogDto>(blog);
+                dto.EmployeeName = blog.Employee?.User != null
+                    ? $"{blog.Employee.User.FirstName} {blog.Employee.User.LastName}".Trim()
+                    : "N/A";
+                return dto;
+            });
+
             return blogDtos;
         }
 
         public async Task<BlogDto> GetBlogById(int id)
         {
             var blog = await _blogRepository.GetBlogByIdAsync(id);
-            if (blog == null)
+            if (blog == null) return null;
+
+            var blogDto = _mapper.Map<BlogDto>(blog);
+            blogDto.EmployeeName = blog.Employee?.User != null
+                ? $"{blog.Employee.User.FirstName} {blog.Employee.User.LastName}".Trim()
+                : "N/A";
+
+            return blogDto;
+        }
+
+        public async Task<IEnumerable<BlogDto>> GetBlogsByCurrentEmployee(string userId)
+        {
+            var employeeId = await _blogRepository.GetEmployeeId(userId);
+            if (employeeId == -1)
             {
-                return null; 
+                return Enumerable.Empty<BlogDto>();
             }
 
-            var blogDto = _mapper.Map<BlogDto>(blog);  
-            return blogDto;
+            var blogs = await _blogRepository.GetBlogsByEmployeeIdAsync(employeeId);
+
+            var blogDtos = blogs.Select(blog =>
+            {
+                var dto = _mapper.Map<BlogDto>(blog);
+                dto.EmployeeName = blog.Employee?.User != null
+                    ? $"{blog.Employee.User.FirstName} {blog.Employee.User.LastName}".Trim()
+                    : "N/A";
+                return dto;
+            });
+
+            return blogDtos;
         }
 
         public async Task<BlogDto> CreateBlog(string userId, BlogDto blogDto)
@@ -47,10 +79,11 @@ namespace DiamondAssessmentSystem.Application.Services
 
             var blog = _mapper.Map<Blog>(blogDto);
 
+            blog.CreatedDate = DateTime.UtcNow;
+
             var createdBlog = await _blogRepository.CreateBlogAsync(userId, blog);
 
             var createdBlogDto = _mapper.Map<BlogDto>(createdBlog);
-
             return createdBlogDto;
         }
 

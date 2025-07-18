@@ -13,6 +13,8 @@ namespace DiamondAssessmentSystem.Application.Interfaces
 
         Task<BlogDto> GetBlogById(int id);
 
+        Task<IEnumerable<BlogDto>> GetBlogsByCurrentEmployee(string userId);
+
         Task<BlogDto> CreateBlog(string userId, BlogDto blogDto);
 
         Task<bool> UpdateBlog(string userId, BlogDto blogDto);

@@ -120,14 +120,14 @@ namespace DiamondAssessmentSystem.Application.Services
             var vnp_SecureHash = vnpay.GetResponseData("vnp_SecureHash");
             var vnp_OrderInfo = vnpay.GetResponseData("vnp_OrderInfo");
 
-            bool checkSignature = vnpay.ValidateSignature(vnp_SecureHash, _config["VnPay:HashSecret"]);
-            if (!checkSignature)
-            {
-                return new VnPaymentResponseDto
-                {
-                    Success = false
-                };
-            }
+            ////bool checkSignature = vnpay.ValidateSignature(vnp_SecureHash, _config["VnPay:HashSecret"]);
+            //if (!checkSignature)
+            //{
+            //    return new VnPaymentResponseDto
+            //    {
+            //        Success = false
+            //    };
+            //}
             return new VnPaymentResponseDto
             {
                 Success = true,

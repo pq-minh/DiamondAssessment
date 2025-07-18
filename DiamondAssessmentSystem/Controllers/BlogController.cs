@@ -39,6 +39,17 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(blog);
         }
 
+        [HttpGet("my")]
+        public async Task<ActionResult<IEnumerable<BlogDto>>> GetMyBlogs()
+        {
+            var userId = _currentUser.UserId;
+            if (userId == null)
+                return Unauthorized();
+
+            var blogs = await _blogService.GetBlogsByCurrentEmployee(userId);
+            return Ok(blogs);
+        }
+
         //[Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<BlogDto>> CreateBlog(BlogDto blogDto)

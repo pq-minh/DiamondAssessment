@@ -19,6 +19,18 @@ namespace DiamondAssessmentSystem.Controllers
             _currentUser = currentUser;
         }
 
+        // GET: api/order/me
+        [HttpGet("me")]
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetMyOrders()
+        {
+            var userId = _currentUser.UserId;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var orders = await _orderService.GetOrdersByCustomerAsync(userId);
+            return Ok(orders);
+        }
+
         // GET: api/order
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetCustomerOrders()
