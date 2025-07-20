@@ -101,7 +101,14 @@ namespace DiamondAssessmentSystem.Application.Map
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
 
-            CreateMap<Request, RequestDto>().ReverseMap();
+            //CreateMap<Request, RequestDto>().ReverseMap();
+            CreateMap<Request, RequestDto>()
+                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src =>
+                    src.Employee != null && src.Employee.User != null
+                        ? $"{src.Employee.User.FirstName} {src.Employee.User.LastName}".Trim()
+                        : ""));
+
+
             CreateMap<Request, CreateRequestDto>().ReverseMap();
             CreateMap<CreateDraftRequestDto, Request>()
                 .ForMember(dest => dest.EmployeeId, opt => opt.Ignore())
@@ -113,6 +120,10 @@ namespace DiamondAssessmentSystem.Application.Map
 
             CreateMap<Result, ResultDto>().ReverseMap();
             CreateMap<Result, ResultCreateDto>().ReverseMap();
+            CreateMap<ResultCreateDto, Result>();
+            //CreateMap<ResultCreateDto, Result>()
+            //    .ForMember(dest => dest.EmployeeId, opt => opt.Ignore());
+
 
             CreateMap<Order, OrderDto>();
             CreateMap<OrderCreateDto, Order>();

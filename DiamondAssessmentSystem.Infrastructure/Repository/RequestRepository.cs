@@ -20,7 +20,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         {
             return await _context.Requests
                 .Include(r => r.Customer)
-                .Include(r => r.Employee)
+                .Include(r => r.Employee).ThenInclude(e => e.User)
                 .Include(r => r.CommitmentRecords)
                 .Include(r => r.SealingRecords)
                 .ToListAsync();
@@ -31,32 +31,11 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return await _context.Requests
                 .Include(r => r.Service)
                 .Include(r => r.Customer)
-                .Include(r => r.Employee)
+                .Include(r => r.Employee).ThenInclude(e => e.User)
                 .Include(r => r.CommitmentRecords)
                 .Include(r => r.SealingRecords)
                 .FirstOrDefaultAsync(r => r.RequestId == id);
         }
-
-        //public async Task<bool> CreateDraftRequest(string? userId, Request request)
-        //{
-        //    if (!string.IsNullOrEmpty(userId))
-        //    {
-        //        var customerId = await GetCustomerId(userId);
-        //        if (customerId == -1)
-        //        {
-        //            return false;
-        //        }
-
-        //        request.CustomerId = customerId;
-        //    }
-
-        //    request.Status = "Draft";
-        //    request.RequestDate = DateTime.Now;
-
-        //    _context.Requests.Add(request);
-        //    await _context.SaveChangesAsync();
-        //    return true;
-        //}
 
         public async Task<Request> AddDraftAsync(Request request)
         {

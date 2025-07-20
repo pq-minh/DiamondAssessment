@@ -10,6 +10,7 @@ public partial class Result
     public int DiamondId { get; set; }
 
     public int RequestId { get; set; }
+
     public int EmployeeId { get; set; }
 
     public string DiamondOrigin { get; set; } = null!;

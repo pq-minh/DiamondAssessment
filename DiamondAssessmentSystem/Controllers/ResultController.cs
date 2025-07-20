@@ -54,6 +54,20 @@ namespace DiamondAssessmentSystem.Controllers
             return Ok(result);
         }
 
+        // GET
+        [HttpGet("diamond/{diamondId:int}")]
+        public async Task<IActionResult> GetResultsByDiamondId(int diamondId)
+        {
+            var results = await _resultService.GetResultsByDiamondIdAsync(diamondId);
+            if (results == null || !results.Any())
+            {
+                return NotFound($"No results found for DiamondId = {diamondId}");
+            }
+
+            return Ok(results);
+        }
+
+
         // POST: api/Result
         [HttpPost]
         public async Task<ActionResult<ResultDto>> PostResult(ResultCreateDto resultCreateDto)

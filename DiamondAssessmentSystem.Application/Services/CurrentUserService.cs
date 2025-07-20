@@ -1,5 +1,6 @@
 ﻿using DiamondAssessmentSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,10 @@ namespace DiamondAssessmentSystem.Application.Services
         }
 
         public int? EmployeeId => int.TryParse(_httpContextAccessor.HttpContext?.User?.FindFirstValue("EmployeeId"), out var id) ? id : (int?)null;
+
+        //public int? EmployeeId => _context.Employees
+        //    .FirstOrDefault(e => e.UserId == UserId)?.EmployeeId;
+
 
         public int? CustomerId
         {

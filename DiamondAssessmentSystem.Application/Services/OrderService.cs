@@ -103,6 +103,10 @@ namespace DiamondAssessmentSystem.Application.Services
             };
 
             var createdOrder = await _orderRepository.CreateOrderAsync(order);
+
+            var result = _mapper.Map<OrderDto>(createdOrder);
+            result.ServiceType = service?.ServiceType;
+
             return _mapper.Map<OrderDto>(createdOrder);
         }
 

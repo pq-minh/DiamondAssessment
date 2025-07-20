@@ -47,6 +47,20 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                                          .FirstOrDefaultAsync(r => r.ResultId == id);
         }
 
+        public async Task<IEnumerable<Result>> GetResultsByDiamondIdAsync(int diamondId)
+        {
+            return await _context.Results
+                .Where(r => r.DiamondId == diamondId)
+                .ToListAsync();
+        }
+
+        public async Task<Result?> GetLastResultAsync()
+        {
+            return await _context.Results
+                .OrderByDescending(r => r.DiamondId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<Result> CreateResultAsync(Result result)
         {
             _context.Results.Add(result);
