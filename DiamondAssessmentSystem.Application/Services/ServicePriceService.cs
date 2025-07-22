@@ -41,6 +41,7 @@ namespace DiamondAssessmentSystem.Application.Services
         {
             var entity = _mapper.Map<ServicePrice>(dto);
             var created = await _repository.AddAsync(entity);
+            entity.DateCreated = DateTime.Now;
             return _mapper.Map<ServicePriceDto>(created);
         }
 

@@ -37,8 +37,9 @@ namespace DiamondAssessmentSystem.Application.Services
 
             newUser.UserType = "Customer";
             newUser.Status = "Active";
+            newUser.DateCreated = DateTime.Now;
 
-            var result = await _userRepository.RegisterCustomerAsync(newUser, registerDto.Password);
+            var result = await _userRepository.RegisterCustomerAsync(newUser, registerDto.Password, registerDto.Email);
             if (!result.Succeeded)
             {
                 var errors = string.Join("; ", result.Errors.Select(e => e.Description));
@@ -52,9 +53,9 @@ namespace DiamondAssessmentSystem.Application.Services
 
         public async Task<LoginResponseDto> LoginAsync(LoginDto loginDto)
         {
-            var user = await _userRepository.ValidateUserCredentialsAsync(loginDto.Username, loginDto.Password);
+            var user = await _userRepository.ValidateUserCredentialsAsync(loginDto.Email, loginDto.Password);
             if (user == null)
-                throw new UnauthorizedAccessException("Incorrect username or password.");
+                throw new UnauthorizedAccessException("Incorrect email or password.");
 
             var roles = await _userRepository.GetUserRolesAsync(user);
             var token = GenerateJwtToken(user, roles);
@@ -79,11 +80,12 @@ namespace DiamondAssessmentSystem.Application.Services
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var associatedId = await _userRepository.GetAssociatedIdByUserIdAsync(user.Id);
-            if (!associatedId.HasValue)
+            if (associatedId.HasValue)
             {
-                throw new UnauthorizedAccessException("Your account is not assigned Customer or Employee. Please contact administrator.");
+                claims.Add(new Claim("AssociatedId", associatedId.Value.ToString()));
             }
 
+            claims.Add(new Claim("AssociatedId", associatedId.Value.ToString()));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

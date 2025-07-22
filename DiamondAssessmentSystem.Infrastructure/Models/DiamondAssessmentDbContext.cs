@@ -1,6 +1,7 @@
 ﻿using DiamondAssessmentSystem.Infrastructure.Enums;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 
@@ -205,7 +206,7 @@ public partial class DiamondAssessmentDbContext : IdentityDbContext<User>
                 .HasColumnName("unit_name");
             entity.Property(e => e.UserId)
                 .IsRequired()
-                .HasMaxLength(450) 
+                .HasMaxLength(450)
                 .HasColumnName("userId");
 
             entity.HasOne(e => e.User)
