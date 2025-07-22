@@ -84,7 +84,6 @@ namespace DiamondAssessmentSystem.Application.Services
                 throw new UnauthorizedAccessException("Your account is not assigned Customer or Employee. Please contact administrator.");
             }
 
-            claims.Add(new Claim("AssociatedId", associatedId.Value.ToString()));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
