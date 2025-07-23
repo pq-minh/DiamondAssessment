@@ -30,10 +30,12 @@ namespace DiamondAssessmentSystem.Application.Map
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
                 .ReverseMap();
 
-
-
             CreateMap<Result, ResultDto>().ReverseMap();
             CreateMap<Result, ResultCreateDto>().ReverseMap();
+            CreateMap<Result, ResultDto>()
+                .ForMember(dest => dest.AssessmentStaff,
+                           opt => opt.MapFrom(src => src.Request.EmployeeId));
+
 
             CreateMap<CustomerCreateDto, Customer>()
                 .ForMember(dest => dest.Idcard, opt => opt.MapFrom(src =>
