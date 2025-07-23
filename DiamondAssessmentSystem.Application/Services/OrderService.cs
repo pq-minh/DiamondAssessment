@@ -52,6 +52,12 @@ namespace DiamondAssessmentSystem.Application.Services
 
         public async Task<IEnumerable<OrderDto>> GetOrdersByCustomerAsync(string userId)
         {
+            //var orders = await _orderRepository.GetOrdersByCustomerAsync(userId);
+            //return _mapper.Map<IEnumerable<OrderDto>>(orders);
+            var _userId = _currentUser.UserId;
+            if (string.IsNullOrEmpty(userId))
+                throw new UnauthorizedAccessException("User not logged in.");
+
             var orders = await _orderRepository.GetOrdersByCustomerAsync(userId);
             return _mapper.Map<IEnumerable<OrderDto>>(orders);
         }
@@ -151,7 +157,7 @@ namespace DiamondAssessmentSystem.Application.Services
         public async Task<bool> UpdatePaymentAsync(string userId, int orderId, string status)
         {
             var order = await _orderRepository.GetOrderByIdAsync(orderId);
-            if (order == null || order.Customer.UserId != userId)
+            if (order == null || order.Customer.UserId != _currentUser.UserId)
             {
                 return false;
             }

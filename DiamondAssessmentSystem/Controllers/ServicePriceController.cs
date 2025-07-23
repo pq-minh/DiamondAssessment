@@ -75,7 +75,7 @@ namespace DiamondAssessmentSystem.WebAPI.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("soft-delete/{id}")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var deleted = await _servicePriceService.SoftDeleteAsync(id);
@@ -85,5 +85,17 @@ namespace DiamondAssessmentSystem.WebAPI.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("hard-delete/{id}")]
+        public async Task<IActionResult> HardDeleteIfInactive(int id)
+        {
+            var deleted = await _servicePriceService.HardDeleteIfInactiveAsync(id);
+
+            if (!deleted)
+                return BadRequest($"ServicePrice ID {id} không thể xóa. Có thể không tồn tại hoặc không có trạng thái 'Inactive'.");
+
+            return NoContent();
+        }
+
     }
 }

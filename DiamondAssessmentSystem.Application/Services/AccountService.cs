@@ -34,6 +34,7 @@ namespace DiamondAssessmentSystem.Application.Services
                     UserId = user.Id,
                     Username = user.UserName,
                     Email = user.Email,
+                    Status = user.Status,
                     Role = roles.FirstOrDefault() ?? "Unknown"
                 });
             }
@@ -52,6 +53,7 @@ namespace DiamondAssessmentSystem.Application.Services
                 UserId = user.Id,
                 Username = user.UserName,
                 Email = user.Email,
+                Status = user.Status,
                 Role = roles.FirstOrDefault() ?? "Unknown"
             };
         }
@@ -92,6 +94,7 @@ namespace DiamondAssessmentSystem.Application.Services
 
             user.UserName = dto.Username;
             user.Email = dto.Email;
+            user.Status = dto.Status;
             return await _userRepository.UpdateUserAsync(user);
         }
 

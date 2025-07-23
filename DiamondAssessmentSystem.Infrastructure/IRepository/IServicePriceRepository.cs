@@ -11,5 +11,6 @@ namespace DiamondAssessmentSystem.Infrastructure.IRepository
         Task<ServicePrice?> GetByIdAsync(int id);
         Task<ServicePrice> AddAsync(ServicePrice servicePrice);
         Task<bool> UpdateAsync(ServicePrice servicePrice);
+        Task<bool> HardDeleteIfInactiveAsync(int id);
     }
 }

@@ -23,6 +23,14 @@ namespace DiamondAssessmentSystem.Application.Map
 
             CreateMap<ServicePrice, ServicePriceCreateDto>().ReverseMap();
             CreateMap<ServicePrice, ServicePriceDto>().ReverseMap();
+            CreateMap<ServicePrice, ServicePriceDto>()
+                .ForMember(dest => dest.EmployeeId, opt => opt.MapFrom(src => src.EmployeeId))
+                .ReverseMap();
+            CreateMap<ServicePrice, ServicePriceDto>()
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ReverseMap();
+
+
 
             CreateMap<Result, ResultDto>().ReverseMap();
             CreateMap<Result, ResultCreateDto>().ReverseMap();

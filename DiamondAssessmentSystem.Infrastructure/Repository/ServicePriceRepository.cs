@@ -30,7 +30,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
 
         public async Task<ServicePrice?> GetByIdAsync(int id)
         {
-            return await _context.ServicePrices.FindAsync(id);
+            return await _context.ServicePrices.Include(sp => sp.Employee).FirstOrDefaultAsync(sp => sp.ServiceId == id);
         }
 
         public async Task<ServicePrice> AddAsync(ServicePrice servicePrice)
@@ -60,6 +60,17 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         private async Task<bool> ExistsAsync(int id)
         {
             return await _context.ServicePrices.AnyAsync(e => e.ServiceId == id);
+        }
+
+        public async Task<bool> HardDeleteIfInactiveAsync(int id)
+        {
+            var entity = await _context.ServicePrices.FindAsync(id);
+            if (entity == null || entity.Status?.ToLower() != "inactive")
+                return false;
+
+            _context.ServicePrices.Remove(entity);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

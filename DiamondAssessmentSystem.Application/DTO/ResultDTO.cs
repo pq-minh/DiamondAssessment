@@ -3,10 +3,7 @@
     public class ResultDto
     {
         public int ResultId { get; set; }
-
         public int AssessmentStaff { get; set; }
-
-        public int DiamondId { get; set; }
 
         public int RequestId { get; set; }
 

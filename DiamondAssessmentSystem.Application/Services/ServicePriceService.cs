@@ -39,10 +39,15 @@ namespace DiamondAssessmentSystem.Application.Services
 
         public async Task<ServicePriceDto> CreateAsync(ServicePriceCreateDto dto)
         {
+            //var entity = _mapper.Map<ServicePrice>(dto);
+            //var created = await _repository.AddAsync(entity);
+            //entity.DateCreated = DateTime.Now;
+            //return _mapper.Map<ServicePriceDto>(created);
             var entity = _mapper.Map<ServicePrice>(dto);
+            entity.DateCreated = DateTime.Now; // Gán trước khi lưu
             var created = await _repository.AddAsync(entity);
-            entity.DateCreated = DateTime.Now;
             return _mapper.Map<ServicePriceDto>(created);
+
         }
 
         public async Task<bool> UpdateAsync(int id, ServicePriceCreateDto dto)
@@ -69,6 +74,11 @@ namespace DiamondAssessmentSystem.Application.Services
 
             existing.Status = "Inactive";
             return await _repository.UpdateAsync(existing);
+        }
+
+        public async Task<bool> HardDeleteIfInactiveAsync(int id)
+        {
+            return await _repository.HardDeleteIfInactiveAsync(id);
         }
     }
 }

@@ -17,7 +17,7 @@ public partial class ServicePrice
 
     public DateTime? DateCreated { get; set; }
 
-    public int EmployeeId { get; set; }
+    public int? EmployeeId { get; set; }
 
     public string Status { get; set; } = null!;
 

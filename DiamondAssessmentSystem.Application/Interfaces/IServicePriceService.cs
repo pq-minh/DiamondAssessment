@@ -12,5 +12,6 @@ namespace DiamondAssessmentSystem.Application.Interfaces
         Task<ServicePriceDto> CreateAsync(ServicePriceCreateDto dto);
         Task<bool> UpdateAsync(int id, ServicePriceCreateDto dto);
         Task<bool> SoftDeleteAsync(int id);
+        Task<bool> HardDeleteIfInactiveAsync(int id);
     }
 }
