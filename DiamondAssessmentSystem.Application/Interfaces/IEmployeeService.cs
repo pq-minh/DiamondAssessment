@@ -1,4 +1,5 @@
 ﻿using DiamondAssessmentSystem.Application.DTO;
+using DiamondAssessmentSystem.Application.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,11 @@ namespace DiamondAssessmentSystem.Application.Interfaces
 {
     public interface IEmployeeService
     {
+        Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync();
         Task<EmployeeDto?> GetEmployees(string id);
-        Task<bool> UpdateEmployee(string userId, EmployeeDto employeeDto);
-
+        Task<AccountDto?> GetUserById(int id);
+        Task<EmployeeEnum> UpdateEmployee(string userId, EmployeeDto employeeDto);
+        //Task<bool> DeleteEmployeeAsync(string userId);
+        Task<string?> GetEmployeeEmail(string userId);
     }
 }

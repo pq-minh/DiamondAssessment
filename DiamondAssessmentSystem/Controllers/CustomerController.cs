@@ -1,4 +1,5 @@
 ﻿using DiamondAssessmentSystem.Application.DTO;
+using DiamondAssessmentSystem.Application.Enums;
 using DiamondAssessmentSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -45,13 +46,16 @@ namespace DiamondAssessmentSystem.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var updated = await _customerService.UpdateCustomerAsync(userId, customerCreateDto);
-            if (!updated)
-            {
-                return NotFound();
-            }
+            var result = await _customerService.UpdateCustomerAsync(userId, customerCreateDto);
 
-            return NoContent();
+            return result switch
+            {
+                UpdateCustomerResult.Success => NoContent(),
+                UpdateCustomerResult.CustomerNotFound => NotFound("Customer not found."),
+                UpdateCustomerResult.InvalidPhoneNumber => BadRequest("Invalid phone number."),
+                UpdateCustomerResult.UpdateFailed => StatusCode(500, "Failed to update customer."),
+                _ => StatusCode(500, "Unexpected error.")
+            };
         }
     }
 }

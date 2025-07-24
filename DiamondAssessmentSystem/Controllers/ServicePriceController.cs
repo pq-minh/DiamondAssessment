@@ -11,6 +11,7 @@ namespace DiamondAssessmentSystem.WebAPI.Controllers
     public class ServicePriceController : ControllerBase
     {
         private readonly IServicePriceService _servicePriceService;
+        private readonly ICurrentUserService _currentUser;
 
         public ServicePriceController(IServicePriceService servicePriceService)
         {
@@ -53,10 +54,14 @@ namespace DiamondAssessmentSystem.WebAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<ServicePriceDto>> Create([FromBody] ServicePriceCreateDto dto)
         {
+            var userId = _currentUser.UserId;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var created = await _servicePriceService.CreateAsync(dto);
+            var created = await _servicePriceService.CreateAsync(dto, userId);
 
             return CreatedAtAction(nameof(GetById), new { id = created.ServiceId }, created);
         }

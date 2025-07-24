@@ -62,6 +62,19 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return true;
         }
 
+        public async Task<Order?> GetByIdAsync(int orderId)
+        {
+            return await _context.Orders
+                .AsNoTracking()
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
+        }
+
+        public async Task<bool> UpdateAsync(Order order)
+        {
+            _context.Orders.Update(order);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
         public async Task<bool> UpdateOrderAsync(Order order)
         {
             _context.Entry(order).State = EntityState.Modified;
@@ -84,7 +97,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             if (order == null)
                 return false;
 
-            order.Status = "Canceled";
+            order.Status = "Cancelled";
             _context.Orders.Update(order);
             await _context.SaveChangesAsync();
             return true;

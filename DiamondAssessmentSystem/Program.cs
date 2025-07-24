@@ -1,4 +1,5 @@
-﻿using DiamondAssessmentSystem.Application.Interfaces;
+﻿using DiamondAssessmentSystem.Application.Email;
+using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Application.Map;
 using DiamondAssessmentSystem.Application.Services;
 using DiamondAssessmentSystem.Hubs;
@@ -10,6 +11,7 @@ using DiamondAssessmentSystem.Infrastructure.SeedData;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -29,16 +31,23 @@ builder.Services.AddDbContext<DiamondAssessmentDbContext>(options =>
 builder.Services.AddHttpContextAccessor();
 
 // ==================== Identity ====================
-builder.Services.AddIdentity<User, IdentityRole>()
+builder.Services.AddIdentity<User, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedEmail = true;
+})
     .AddEntityFrameworkStores<DiamondAssessmentDbContext>()
     .AddDefaultTokenProviders();
 
-// Optional cookie paths (good for future UI)
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
     options.LogoutPath = "/Account/Logout";
 });
+
+// ==================== Email===========================
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailService, EmailService>();
+
 
 // ==================== Application Services ====================
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
@@ -98,7 +107,6 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 
-    // 👇 VERY IMPORTANT for SignalR with JWT
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>

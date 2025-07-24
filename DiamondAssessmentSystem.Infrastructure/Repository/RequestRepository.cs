@@ -19,6 +19,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         public async Task<IEnumerable<Request>> GetRequestsAsync()
         {
             return await _context.Requests
+                .Include(r => r.Service)
                 .Include(r => r.Customer)
                 .Include(r => r.Employee)
                 .Include(r => r.CommitmentRecords)
@@ -26,14 +27,48 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
                 .ToListAsync();
         }
 
+        //public async Task<Request?> GetRequestByIdAsync(int id)
+        //{
+        //    return await _context.Requests
+        //        .Include(r => r.Customer)
+        //        .Include(r => r.Employee).ThenInclude(e => e.User)
+        //        .Include(r => r.CommitmentRecords)
+        //        .Include(r => r.SealingRecords)
+        //        .Include(r => r.Service)
+        //        .FirstOrDefaultAsync(r => r.RequestId == id);
+        //}
+
         public async Task<Request?> GetRequestByIdAsync(int id)
+        {
+            return await _context.Requests.FirstOrDefaultAsync(r => r.RequestId == id);
+
+        }
+
+        public async Task<IEnumerable<Request>> GetRequestsByCustomerAsync(string userId)
+        {
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (customer == null)
+            {
+                return Enumerable.Empty<Request>();
+            }
+
+            return await _context.Requests.Include(r => r.Service)
+                .Where(r => r.CustomerId == customer.CustomerId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Request>> GetDraftOrPendingRequestsAsync(string userId)
         {
             return await _context.Requests
                 .Include(r => r.Customer)
-                .Include(r => r.Employee)
-                .Include(r => r.CommitmentRecords)
-                .Include(r => r.SealingRecords)
-                .FirstOrDefaultAsync(r => r.RequestId == id);
+                .Include(r => r.Service)
+                .Where(r =>
+                    r.Customer != null &&
+                    r.Customer.UserId == userId &&
+                    (r.Status == "Draft" || r.Status == "Pending"))
+                .ToListAsync();
         }
 
         public async Task<bool> CreateDraftRequest(string userId, Request request)
@@ -125,13 +160,25 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         private async Task<int> GetCustomerId(string userId)
         {
             var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserId == userId);
-            
+
             if (customer == null)
             {
                 return -1;
             }
 
             return customer.CustomerId;
+        }
+
+        public async Task<int> GetEmployeeId(string userId)
+        {
+            var employee = await _context.Employees.FirstOrDefaultAsync(x => x.UserId == userId);
+
+            if (employee == null)
+            {
+                return -1;
+            }
+
+            return employee.EmployeeId;
         }
     }
 }

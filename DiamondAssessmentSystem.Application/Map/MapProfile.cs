@@ -18,14 +18,31 @@ namespace DiamondAssessmentSystem.Application.Map
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName));
 
-            CreateMap<Request, RequestDto>().ReverseMap();
+            CreateMap<Request, RequestDto>()
+                .ForMember(dest => dest.ServiceType, opt => opt.MapFrom(src => src.Service.ServiceType))
+                .ForMember(dest => dest.ServicePrice, opt => opt.MapFrom(src => src.Service.Price))
+                .ForMember(dest => dest.ServiceDuration, opt => opt.MapFrom(src => src.Service.Duration))
+                .ForMember(dest => dest.ServiceDescription, opt => opt.MapFrom(src => src.Service.Description))
+                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src =>
+                    src.Employee != null && src.Employee.User != null
+                        ? src.Employee.User.FirstName + " " + src.Employee.User.LastName
+                        : null));
+
+            CreateMap<RequestDto, Request>();
+
             CreateMap<Request, RequestCreateDto>().ReverseMap();
 
             CreateMap<ServicePrice, ServicePriceCreateDto>().ReverseMap();
             CreateMap<ServicePrice, ServicePriceDto>().ReverseMap();
+            CreateMap<ServicePrice, ServicePriceDto>()
+                .ForMember(dest => dest.EmployeeId, opt => opt.MapFrom(src => src.EmployeeId))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ReverseMap();
 
             CreateMap<Result, ResultDto>().ReverseMap();
             CreateMap<Result, ResultCreateDto>().ReverseMap();
+            CreateMap<ResultUpdateDto, Result>();
+
 
             CreateMap<CustomerCreateDto, Customer>()
                 .ForMember(dest => dest.Idcard, opt => opt.MapFrom(src =>
@@ -89,19 +106,23 @@ namespace DiamondAssessmentSystem.Application.Map
 
             CreateMap<Certificate, CertificateDto>().ReverseMap();
             CreateMap<Certificate, CertificateCreateDto>().ReverseMap();
+            CreateMap<Certificate, CertificateEditDto>().ReverseMap();
+            CreateMap<CertificateEditDto, Certificate>();
+            CreateMap<CertificateDto, CertificateEditDto>();
+            CreateMap<CertificateEditDto, Certificate>()
+                .ForMember(dest => dest.CertificateNumber, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.ApprovedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.ApprovedDate, opt => opt.Ignore());
+
+
+
 
             CreateMap<BlogDto, Blog>()
-                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => string.IsNullOrWhiteSpace(src.Status) ? "Draft" : src.Status));
+    .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => string.IsNullOrWhiteSpace(src.Status) ? "Draft" : src.Status));
 
-            CreateMap<Blog, BlogDto>()
-                .ForMember(dest => dest.EmployeeName, opt =>
-                    opt.MapFrom(src =>
-                    src.Employee != null && src.Employee.User != null
-                    ? $"{src.Employee.User.FirstName} {src.Employee.User.LastName}".Trim()
-                    : "N/A"));
-
-            //CreateMap<Blog, BlogDto>();
+            CreateMap<Blog, BlogDto>();
 
             CreateMap<Conversation, ConversationDTO>();
 

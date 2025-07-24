@@ -25,11 +25,14 @@ public partial class DiamondAssessmentDbContext : IdentityDbContext<User>
     public MessageType MessageType { get; set; }
 
     public virtual DbSet<ChatLog> ChatLogs { get; set; }
+
     public virtual DbSet<Conversation> Conversations { get; set; }
 
     public virtual DbSet<CommitmentRecord> CommitmentRecords { get; set; }
 
     public virtual DbSet<Customer> Customers { get; set; }
+
+    public DbSet<Diamond> Diamonds { get; set; }
 
     public virtual DbSet<Employee> Employees { get; set; }
 

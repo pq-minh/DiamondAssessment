@@ -37,9 +37,12 @@ namespace DiamondAssessmentSystem.Application.Services
             return entity == null ? null : _mapper.Map<ServicePriceDto>(entity);
         }
 
-        public async Task<ServicePriceDto> CreateAsync(ServicePriceCreateDto dto)
+        public async Task<ServicePriceDto> CreateAsync(ServicePriceCreateDto dto, string userId)
         {
             var entity = _mapper.Map<ServicePrice>(dto);
+
+            entity.EmployeeId = await _repository.GetEmployeeId(userId);
+
             var created = await _repository.AddAsync(entity);
             entity.DateCreated = DateTime.Now;
             return _mapper.Map<ServicePriceDto>(created);
@@ -51,8 +54,9 @@ namespace DiamondAssessmentSystem.Application.Services
             if (existing == null)
                 return false;
 
-            // Update fields
+            existing.ServiceId = id;
             existing.ServiceType = dto.ServiceType;
+            existing.Description = dto.Description;
             existing.Price = dto.Price;
             existing.Duration = dto.Duration;
             existing.EmployeeId = dto.EmployeeId;

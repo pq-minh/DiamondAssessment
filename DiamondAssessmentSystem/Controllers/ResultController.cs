@@ -61,16 +61,16 @@ namespace DiamondAssessmentSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ResultDto>> CreateResult(int orderId, ResultCreateDto resultCreateDto)
+        public async Task<ActionResult<ResultDto>> CreateResult(ResultCreateDto resultCreateDto)
         {
-            var createdResult = await _resultService.CreateResultAsync(orderId, resultCreateDto);
+            var createdResult = await _resultService.CreateResultAsync(resultCreateDto);
             if (createdResult) { return NoContent(); }
             return BadRequest();
         }
 
         
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutResult(int id, ResultCreateDto resultCreateDto)
+        public async Task<IActionResult> PutResult(int id, ResultUpdateDto resultCreateDto)
         {
             var updated = await _resultService.UpdateResultAsync(id, resultCreateDto);
             if (!updated)

@@ -90,6 +90,11 @@ namespace DiamondAssessmentSystem.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateOrder(int id, [FromBody] OrderCreateDto orderDto)
         {
+            var userId = _currentUser.UserId;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 

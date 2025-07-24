@@ -17,8 +17,8 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
 
         public async Task<IEnumerable<Result>> GetResultsAsync()
         {
-            return await _context.Results.Include(r => r.Request) 
-                                         .ThenInclude(r => r.Employee) 
+            return await _context.Results.Include(r => r.Request)
+                                         .ThenInclude(r => r.Employee)
                                          .Include(r => r.Certificates)
                                          .ToListAsync();
         }
@@ -26,7 +26,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         public async Task<IEnumerable<Result>> GetResultsAsync(int customerId)
         {
             return await _context.Results
-              .Include(r => r.Request).ThenInclude(r => r.Employee)
+              .Include(r => r.Request)
               .Include(r => r.Certificates)
               .Where(r => r.Request.CustomerId == customerId)
               .ToListAsync();
@@ -44,14 +44,14 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
             return await _context.Results
               .Include(r => r.Request).ThenInclude(r => r.Employee)
               .Include(r => r.Certificates)
-              .Where(r => r.Request.CustomerId == customerId)  
+              .Where(r => r.Request.CustomerId == customerId)
               .ToListAsync();
         }
 
         public async Task<Result?> GetResultByIdAsync(int id)
         {
-            return await _context.Results.Include(r => r.Request)   
-                                         .ThenInclude(r => r.Employee) 
+            return await _context.Results.Include(r => r.Request)
+                                         .ThenInclude(r => r.Employee)
                                          .Include(r => r.Certificates)
                                          .FirstOrDefaultAsync(r => r.ResultId == id);
         }
@@ -59,8 +59,16 @@ namespace DiamondAssessmentSystem.Infrastructure.Repository
         public async Task<Result> CreateResultAsync(Result result)
         {
             _context.Results.Add(result);
-            await _context.SaveChangesAsync();
-            return result;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return result;
+            }
+            catch (DbUpdateException)
+            {
+                throw;
+            }
         }
 
         public async Task<bool> UpdateResultAsync(Result result)

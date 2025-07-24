@@ -7,7 +7,7 @@ public partial class Result
 {
     public int ResultId { get; set; }
 
-    public int DiamondId { get; set; }
+    public int? DiamondId { get; set; }
 
     public int RequestId { get; set; }
 
@@ -40,4 +40,6 @@ public partial class Result
     public virtual ICollection<Certificate> Certificates { get; set; } = new List<Certificate>();
 
     public virtual Request Request { get; set; } = null!;
+
+    public virtual Diamond? Diamond { get; set; }
 }

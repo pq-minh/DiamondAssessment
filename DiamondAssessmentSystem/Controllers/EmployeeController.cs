@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DiamondAssessmentSystem.Application.DTO;
+using DiamondAssessmentSystem.Application.Enums;
 using DiamondAssessmentSystem.Application.Interfaces;
-using DiamondAssessmentSystem.Application.DTO;
+using DiamondAssessmentSystem.Infrastructure.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DiamondAssessmentSystem.Controllers
 {
@@ -41,11 +43,16 @@ namespace DiamondAssessmentSystem.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var updated = await _employeeService.UpdateEmployee(userId, employeeDto);
-            if (!updated)
-                return NotFound();
+            var result = await _employeeService.UpdateEmployee(userId, employeeDto);
 
-            return NoContent();
+            return result switch
+            {
+                EmployeeEnum.Success => NoContent(),
+                EmployeeEnum.NotFound => NotFound("Customer not found."),
+                EmployeeEnum.InvalidPhoneNumber => BadRequest("Invalid phone number."),
+                EmployeeEnum.UpdateFailed => StatusCode(500, "Failed to update customer."),
+                _ => StatusCode(500, "Unexpected error.")
+            };
         }
 
         // PUT api/employee/{userId}
@@ -53,11 +60,16 @@ namespace DiamondAssessmentSystem.Controllers
         // [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateEmployee(string userId, [FromBody] EmployeeDto employeeDto)
         {
-            var updated = await _employeeService.UpdateEmployee(userId, employeeDto);
-            if (!updated)
-                return NotFound();
+            var result = await _employeeService.UpdateEmployee(userId, employeeDto);
 
-            return NoContent();
+            return result switch
+            {
+                EmployeeEnum.Success => NoContent(),
+                EmployeeEnum.NotFound => NotFound("Customer not found."),
+                EmployeeEnum.InvalidPhoneNumber => BadRequest("Invalid phone number."),
+                EmployeeEnum.UpdateFailed => StatusCode(500, "Failed to update customer."),
+                _ => StatusCode(500, "Unexpected error.")
+            };
         }
     }
 }
