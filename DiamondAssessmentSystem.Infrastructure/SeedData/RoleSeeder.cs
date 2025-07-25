@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace DiamondAssessmentSystem.Data.Seed
+namespace DiamondAssessmentSystem.Infrastructure.SeedData
 {
     public static class RoleSeeder
     {

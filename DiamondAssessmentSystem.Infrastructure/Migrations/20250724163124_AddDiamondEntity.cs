@@ -6,41 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DiamondAssessmentSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDateCreatedToServicePrice : Migration
+    public partial class AddDiamondEntity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "Description",
-                table: "Service_prices",
-                newName: "description");
-
-            migrationBuilder.RenameColumn(
-                name: "DateCreated",
-                table: "Service_prices",
-                newName: "date_created");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "description",
-                table: "Service_prices",
-                type: "nvarchar(255)",
-                maxLength: 255,
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)",
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<DateTime>(
-                name: "date_created",
-                table: "Service_prices",
-                type: "datetime",
-                nullable: true,
-                defaultValueSql: "GETDATE()",
-                oldClrType: typeof(DateTime),
-                oldType: "datetime2",
-                oldNullable: true);
-
             migrationBuilder.AlterColumn<int>(
                 name: "diamond_id",
                 table: "Results",
@@ -48,16 +18,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                 nullable: true,
                 oldClrType: typeof(int),
                 oldType: "int");
-
-            migrationBuilder.AlterColumn<DateTime>(
-                name: "DateCreated",
-                table: "AspNetUsers",
-                type: "datetime",
-                nullable: true,
-                defaultValueSql: "GETDATE()",
-                oldClrType: typeof(DateTime),
-                oldType: "datetime2",
-                oldNullable: true);
 
             migrationBuilder.CreateTable(
                 name: "Diamonds",
@@ -124,36 +84,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                 name: "IX_Results_diamond_id",
                 table: "Results");
 
-            migrationBuilder.RenameColumn(
-                name: "description",
-                table: "Service_prices",
-                newName: "Description");
-
-            migrationBuilder.RenameColumn(
-                name: "date_created",
-                table: "Service_prices",
-                newName: "DateCreated");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Description",
-                table: "Service_prices",
-                type: "nvarchar(max)",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(255)",
-                oldMaxLength: 255,
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<DateTime>(
-                name: "DateCreated",
-                table: "Service_prices",
-                type: "datetime2",
-                nullable: true,
-                oldClrType: typeof(DateTime),
-                oldType: "datetime",
-                oldNullable: true,
-                oldDefaultValueSql: "GETDATE()");
-
             migrationBuilder.AlterColumn<int>(
                 name: "diamond_id",
                 table: "Results",
@@ -163,16 +93,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                 oldClrType: typeof(int),
                 oldType: "int",
                 oldNullable: true);
-
-            migrationBuilder.AlterColumn<DateTime>(
-                name: "DateCreated",
-                table: "AspNetUsers",
-                type: "datetime2",
-                nullable: true,
-                oldClrType: typeof(DateTime),
-                oldType: "datetime",
-                oldNullable: true,
-                oldDefaultValueSql: "GETDATE()");
         }
     }
 }
