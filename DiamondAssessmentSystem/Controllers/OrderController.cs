@@ -1,5 +1,6 @@
 ﻿using DiamondAssessmentSystem.Application.DTO;
 using DiamondAssessmentSystem.Application.Interfaces;
+using DiamondAssessmentSystem.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,11 +13,14 @@ namespace DiamondAssessmentSystem.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly ICurrentUserService _currentUser;
+        private readonly IVnPayService _vnPayService;
 
-        public OrderController(IOrderService orderService, ICurrentUserService currentUser)
+        public OrderController(IOrderService orderService, ICurrentUserService currentUser, IVnPayService vnPayService)
         {
             _orderService = orderService;
             _currentUser = currentUser;
+            _vnPayService = vnPayService;
+
         }
 
         // GET: api/order/me
@@ -132,6 +136,13 @@ namespace DiamondAssessmentSystem.Controllers
                 return BadRequest();
 
             return NoContent();
+        }
+
+        [HttpPost("create-payment-url")]
+        public async Task<IActionResult> CreatePaymentUrl([FromBody] VnPaymentRequestDto dto)
+        {
+            var url = await _vnPayService.CreatePatmentUrl(HttpContext, dto);
+            return Ok(new { paymentUrl = url });
         }
     }
 }
