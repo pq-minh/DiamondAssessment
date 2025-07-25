@@ -2,12 +2,13 @@
 using DiamondAssessmentSystem.Application.Interfaces;
 using DiamondAssessmentSystem.Application.Map;
 using DiamondAssessmentSystem.Application.Services;
+using DiamondAssessmentSystem.Data;
+using DiamondAssessmentSystem.Data.Seed;
 using DiamondAssessmentSystem.Hubs;
 using DiamondAssessmentSystem.Infrastructure.Auth;
 using DiamondAssessmentSystem.Infrastructure.IRepository;
 using DiamondAssessmentSystem.Infrastructure.Models;
 using DiamondAssessmentSystem.Infrastructure.Repository;
-using DiamondAssessmentSystem.Infrastructure.SeedData;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -17,20 +18,20 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ==================== AutoMapper ====================
+// ========== AutoMapper ==========
 builder.Services.AddAutoMapper(typeof(MapProfile));
 
-// ==================== Controllers ====================
+// ========== Controllers ==========
 builder.Services.AddControllers();
 
-// ==================== DbContext ====================
+// ========== DbContext ==========
 builder.Services.AddDbContext<DiamondAssessmentDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ==================== HttpContextAccessor ====================
+// ========== HttpContextAccessor ==========
 builder.Services.AddHttpContextAccessor();
 
-// ==================== Identity ====================
+// ========== Identity ==========
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedEmail = true;
@@ -44,12 +45,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/Account/Logout";
 });
 
-// ==================== Email===========================
+// ========== Email ==========
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
 
-
-// ==================== Application Services ====================
+// ========== Application Services ==========
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IServicePriceService, ServicePriceService>();
 builder.Services.AddScoped<IResultService, ResultService>();
@@ -66,7 +66,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
 
-// ==================== Repositories ====================
+// ========== Repositories ==========
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBlogRepository, BlogRepository>();
 builder.Services.AddScoped<ICertificateRepository, CertificateRepository>();
@@ -81,10 +81,10 @@ builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IChatLogRepository, ChatLogRepository>();
 
-// ==================== SignalR ====================
+// ========== SignalR ==========
 builder.Services.AddSignalR();
 
-// ==================== JWT Authentication ====================
+// ========== JWT Authentication ==========
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
 
 builder.Services.AddAuthentication(options =>
@@ -124,7 +124,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// ==================== CORS ====================
+// ========== CORS ==========
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin", policy =>
@@ -137,13 +137,12 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ==================== Swagger ====================
+// ========== Swagger ==========
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "DiamondAssessmentSystem API", Version = "v1" });
 
-    // Add JWT Bearer
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
@@ -172,38 +171,45 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// ==================== Database seeding ====================
+// ========== Database Seeding ==========
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var logger = services.GetRequiredService<ILogger<Program>>();
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var context = services.GetRequiredService<DiamondAssessmentDbContext>();
+    var config = services.GetRequiredService<IConfiguration>();
+    var userManager = services.GetRequiredService<UserManager<User>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-    await DbInitializer.SeedDefaultAdminAsync(services);
-    await RoleSeeder.SeedRolesAsync(roleManager, logger);
-    await DataSeeder.SeedSampleDataAsync(services, context);
+    var hasAdmin = (await userManager.GetUsersInRoleAsync("Admin")).Any();
+    if (!hasAdmin)
+    {
+        DbInitializer.Seed(context);
+        await RoleSeeder.SeedRolesAsync(roleManager, logger);
+        await AdminSeeder.SeedAdminAsync(userManager, roleManager, config, context, logger);
+        await UserRoleSeeder.SeedUserRolesAsync(userManager, logger);
+        BlogSeeder.Seed(context, config);
+    }
+    else
+    {
+        logger.LogInformation("Seed skipped: Admin user already exists.");
+    }
 }
 
-// ==================== Middleware ====================
+// ========== Middleware ==========
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-// Redirect HTTPS only in production
-if (!app.Environment.IsDevelopment())
+else
 {
     app.UseHttpsRedirection();
 }
 
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseCors("AllowSpecificOrigin");
-
 app.UseAuthentication();
 app.UseAuthorization();
 

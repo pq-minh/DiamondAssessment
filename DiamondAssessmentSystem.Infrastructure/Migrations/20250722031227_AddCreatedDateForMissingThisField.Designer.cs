@@ -4,6 +4,7 @@ using DiamondAssessmentSystem.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiamondAssessmentSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(DiamondAssessmentDbContext))]
-    partial class DiamondAssessmentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250722031227_AddCreatedDateForMissingThisField")]
+    partial class AddCreatedDateForMissingThisField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -312,38 +315,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                     b.ToTable("Customers");
                 });
 
-            modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Diamond", b =>
-                {
-                    b.Property<int>("DiamondId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DiamondId"));
-
-                    b.Property<DateTime?>("DateReceived")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateReturn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RequestId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("DiamondId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("RequestId");
-
-                    b.ToTable("Diamonds");
-                });
-
             modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Employee", b =>
                 {
                     b.Property<int>("EmployeeId")
@@ -539,7 +510,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                         .HasColumnType("varchar(50)")
                         .HasColumnName("cut");
 
-                    b.Property<int?>("DiamondId")
+                    b.Property<int>("DiamondId")
                         .HasColumnType("int")
                         .HasColumnName("diamond_id");
 
@@ -605,8 +576,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                     b.HasKey("ResultId")
                         .HasName("PK__Results__AFB3C316E0E04CA2");
 
-                    b.HasIndex("DiamondId");
-
                     b.HasIndex("RequestId");
 
                     b.ToTable("Results");
@@ -669,15 +638,10 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceId"));
 
                     b.Property<DateTime?>("DateCreated")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasColumnName("date_created")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("description");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Duration")
                         .HasColumnType("int")
@@ -795,9 +759,7 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("DateCreated")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -1098,23 +1060,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Diamond", b =>
-                {
-                    b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId");
-
-                    b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.Request", "Request")
-                        .WithMany()
-                        .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Request");
-                });
-
             modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Employee", b =>
                 {
                     b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.User", "User")
@@ -1185,17 +1130,11 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
 
             modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Result", b =>
                 {
-                    b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.Diamond", "Diamond")
-                        .WithMany("Results")
-                        .HasForeignKey("DiamondId");
-
                     b.HasOne("DiamondAssessmentSystem.Infrastructure.Models.Request", "Request")
                         .WithMany("Results")
                         .HasForeignKey("RequestId")
                         .IsRequired()
                         .HasConstraintName("FK__Results__request__5535A963");
-
-                    b.Navigation("Diamond");
 
                     b.Navigation("Request");
                 });
@@ -1309,11 +1248,6 @@ namespace DiamondAssessmentSystem.Infrastructure.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("Requests");
-                });
-
-            modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Diamond", b =>
-                {
-                    b.Navigation("Results");
                 });
 
             modelBuilder.Entity("DiamondAssessmentSystem.Infrastructure.Models.Employee", b =>
