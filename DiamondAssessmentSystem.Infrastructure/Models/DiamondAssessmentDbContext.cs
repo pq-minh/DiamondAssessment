@@ -59,6 +59,13 @@ public partial class DiamondAssessmentDbContext : IdentityDbContext<User>
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(u => u.DateCreated)
+                  .HasColumnType("datetime")
+                  .HasDefaultValueSql("GETDATE()");
+        });
+
         modelBuilder.Entity<Blog>(entity =>
         {
             entity.HasKey(e => e.BlogId).HasName("PK__Blogs__2975AA28461437B8");
@@ -439,6 +446,15 @@ public partial class DiamondAssessmentDbContext : IdentityDbContext<User>
                 .HasForeignKey(d => d.EmployeeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Service_p__emplo__4D94879B");
+
+            entity.Property(e => e.Description)
+                .HasMaxLength(255)
+                .HasColumnName("description");
+
+            entity.Property(e => e.DateCreated)
+                .HasColumnType("datetime")
+                .HasColumnName("date_created")
+                .HasDefaultValueSql("GETDATE()");
         });
 
         modelBuilder.Entity<ServicePriceAudit>(entity =>
