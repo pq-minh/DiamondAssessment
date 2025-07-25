@@ -60,6 +60,8 @@ namespace DiamondAssessmentSystem.Application.Services
 
             var order = _mapper.Map<Order>(dto);
 
+            order.ServiceId = dto.ServiceId;
+
             switch (paymentType)
             {
                 case "Online":
